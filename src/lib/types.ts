@@ -4,6 +4,54 @@ export interface EventLite {
   startsAt: string; // ISO string
   location?: string;
   description?: string;
+  imageUrl?: string;
+  capacity?: number;
+  isPublic: boolean;
+  status: 'active' | 'cancelled' | 'completed';
+  rsvpCount?: number;
+  commentCount?: number;
+  userId: string;
+}
+
+// Type for creating events (without id and userId)
+export interface CreateEventData {
+  title: string;
+  startsAt: string;
+  location?: string;
+  description?: string;
+  imageUrl?: string;
+  capacity?: number;
+  isPublic: boolean;
+  status: 'active' | 'cancelled' | 'completed';
+}
+
+export interface EventRSVP {
+  id: string;
+  eventId: string;
+  userId: string;
+  status: 'going' | 'maybe' | 'not_going';
+  createdAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface EventComment {
+  id: string;
+  eventId: string;
+  userId: string;
+  content: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  replies?: EventComment[];
 }
 
 // Database types for Supabase
@@ -17,6 +65,11 @@ export interface Database {
           description: string | null;
           starts_at: string;
           location: string | null;
+          user_id: string;
+          image_url: string | null;
+          capacity: number | null;
+          is_public: boolean;
+          status: string;
           created_at: string;
           updated_at: string;
         };
@@ -26,6 +79,11 @@ export interface Database {
           description?: string | null;
           starts_at: string;
           location?: string | null;
+          user_id: string;
+          image_url?: string | null;
+          capacity?: number | null;
+          is_public?: boolean;
+          status?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -35,6 +93,66 @@ export interface Database {
           description?: string | null;
           starts_at?: string;
           location?: string | null;
+          user_id?: string;
+          image_url?: string | null;
+          capacity?: number | null;
+          is_public?: boolean;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      event_rsvps: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          status: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      event_comments: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          content: string;
+          parent_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          content: string;
+          parent_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          content?: string;
+          parent_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

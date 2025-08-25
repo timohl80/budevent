@@ -1,20 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { EventsService } from '@/lib/events-service';
 import { useSession } from 'next-auth/react';
+import { EventsService } from '@/lib/events-service';
+import { EventLite } from '@/lib/types';
 import { SimpleStorageService } from '@/lib/simple-storage-service';
 import ImageUpload from '@/components/ImageUpload';
 
-export default function CreateEventPage() {
-  return <CreateEventForm />;
-}
-
-function CreateEventForm() {
+export default function EditEventPage() {
   const router = useRouter();
+  const params = useParams();
   const { data: session, status } = useSession();
+  const [event, setEvent] = useState<EventLite | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -23,17 +26,54 @@ function CreateEventForm() {
     imageUrl: '',
     capacity: '',
     isPublic: true,
+    status: 'active' as 'active' | 'cancelled' | 'completed',
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
-  const [tempEventId, setTempEventId] = useState<string>('');
-  
-  // Generate a temporary event ID when component mounts
+
+  const eventId = params.id as string;
+
   useEffect(() => {
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    console.log('Generated temp event ID:', tempId);
-    setTempEventId(tempId);
-  }, []);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    async function fetchEvent() {
+      try {
+        setLoading(true);
+        const events = await EventsService.getEvents();
+        const currentEvent = events.find(e => e.id === eventId);
+        
+        if (!currentEvent) {
+          setError('Event not found');
+          return;
+        }
+
+        // Check if user owns this event
+        if (currentEvent.userId !== (session?.user as any)?.id) {
+          setError('You can only edit your own events');
+          return;
+        }
+
+        setEvent(currentEvent);
+        setFormData({
+          title: currentEvent.title,
+          description: currentEvent.description || '',
+          startsAt: new Date(currentEvent.startsAt).toISOString().slice(0, 16),
+          location: currentEvent.location || '',
+          imageUrl: currentEvent.imageUrl || '',
+          capacity: currentEvent.capacity?.toString() || '',
+          isPublic: currentEvent.isPublic,
+          status: currentEvent.status,
+        });
+        setUploadedImageUrl(currentEvent.imageUrl || '');
+      } catch (err) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (session && eventId) {
+      fetchEvent();
+    }
+  }, [session, eventId]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -59,7 +99,40 @@ function CreateEventForm() {
     return (
       <main className="space-y-6 py-6">
         <div className="text-center py-12">
-          <p className="text-[#2D3436] opacity-80">Access denied. Please sign in to create events.</p>
+          <p className="text-[#2D3436] opacity-80">Access denied. Please sign in to edit events.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (loading) {
+    return (
+      <main className="space-y-6 py-6">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A29BFE] mx-auto"></div>
+          <p className="mt-4 text-[#2D3436] opacity-80">Loading event...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <main className="space-y-6 py-6">
+        <div className="text-center py-12">
+          <div className="text-red-500">
+            <svg className="mx-auto h-12 w-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p className="text-lg font-medium text-red-600 mb-2">Error</p>
+            <p className="text-red-500">{error || 'Event not found'}</p>
+          </div>
+          <Link
+            href="/events"
+            className="inline-flex items-center px-6 py-3 mt-4 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors"
+          >
+            Back to Events
+          </Link>
         </div>
       </main>
     );
@@ -67,45 +140,35 @@ function CreateEventForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setSaving(true);
+    setError(null);
 
-    console.log('Form submission started');
-    console.log('Session data:', session);
-    console.log('User ID:', (session?.user as any)?.id);
-    console.log('Form data:', formData);
-
-    // Convert local datetime to ISO string
-    const isoDateTime = new Date(formData.startsAt).toISOString();
-    console.log('Converted datetime:', isoDateTime);
-    
     try {
-          // Add the new event to Supabase
-    const newEvent = await EventsService.createEvent({
-      title: formData.title,
-      description: formData.description,
-      startsAt: isoDateTime,
-      location: formData.location,
-      imageUrl: uploadedImageUrl || undefined,
-      capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
-      isPublic: formData.isPublic,
-      status: 'active' as const,
-    }, (session.user as any).id);
+      // Convert local datetime to ISO string
+      const isoDateTime = new Date(formData.startsAt).toISOString();
       
-      console.log('Event created successfully');
+      // Update the event
+      await EventsService.updateEvent(eventId, {
+        title: formData.title,
+        description: formData.description,
+        startsAt: isoDateTime,
+        location: formData.location,
+        imageUrl: uploadedImageUrl || undefined,
+        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+        isPublic: formData.isPublic,
+        status: formData.status,
+      });
+
+      // Redirect back to events page
+      router.push('/events');
     } catch (error) {
-      console.error('Error in form submission:', error);
-      setIsSubmitting(false);
-      return; // Don't redirect on error
+      console.error('Error updating event:', error);
+      setError('Failed to update event. Please try again.');
+      setSaving(false);
     }
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Redirect back to events page
-    router.push('/events');
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -137,12 +200,27 @@ function CreateEventForm() {
         </div>
         
         <h1 className="text-3xl font-bold text-[#2D3436]">
-          Create New Event
+          Edit Event
         </h1>
         <p className="text-[#2D3436] opacity-80">
-          Share your event with the community and bring people together.
+          Update your event details and settings.
         </p>
       </section>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section>
         <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
@@ -157,7 +235,7 @@ function CreateEventForm() {
               required
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
               placeholder="Enter event title"
             />
           </div>
@@ -172,7 +250,7 @@ function CreateEventForm() {
               rows={4}
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors resize-none"
               placeholder="Describe your event..."
             />
           </div>
@@ -188,7 +266,7 @@ function CreateEventForm() {
               required
               value={formData.startsAt}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
             />
           </div>
 
@@ -215,7 +293,7 @@ function CreateEventForm() {
               onImageUploaded={setUploadedImageUrl}
               onImageRemoved={() => setUploadedImageUrl('')}
               currentImageUrl={uploadedImageUrl}
-              eventId={tempEventId}
+              eventId={eventId}
             />
             <p className="text-sm text-[#2D3436] opacity-70">Upload an image for your event (PNG, JPG, GIF up to 5MB)</p>
           </div>
@@ -235,6 +313,23 @@ function CreateEventForm() {
               placeholder="50"
             />
             <p className="text-sm text-[#2D3436] opacity-70">Optional: Maximum number of attendees</p>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="status" className="block text-sm font-medium text-[#2D3436]">
+              Event Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+            >
+              <option value="active">Active</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -276,10 +371,10 @@ function CreateEventForm() {
             </Link>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={saving}
               className="px-6 py-3 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Creating...' : 'Create Event'}
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

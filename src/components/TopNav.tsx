@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function TopNav() {
+  const { data: session } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -72,9 +74,26 @@ export default function TopNav() {
           >
             Events
           </Link>
-          <button className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#2D3436] bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors">
-            Sign in
-          </button>
+          {session ? (
+            <div className="flex items-center space-x-4">
+              <span className="text-white text-sm">
+                Welcome, {session.user?.name || session.user?.email}
+              </span>
+              <button 
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#2D3436] bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#2D3436] bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -132,9 +151,26 @@ export default function TopNav() {
             >
               Events
             </Link>
-            <button className="w-full text-left px-3 py-2 text-sm font-medium text-blue-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-              Sign in
-            </button>
+            {session ? (
+              <div className="space-y-2">
+                <div className="px-3 py-2 text-sm text-gray-700 border-b border-gray-200">
+                  Welcome, {session.user?.name || session.user?.email}
+                </div>
+                <button 
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="block px-3 py-2 text-sm font-medium text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       )}
