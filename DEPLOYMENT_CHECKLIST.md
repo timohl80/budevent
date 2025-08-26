@@ -13,8 +13,7 @@ Copy these from your local `.env.local` file:
 
 ### **Supabase**
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` 
-- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ### **NextAuth**
 - `NEXTAUTH_SECRET` (use: `1plRcGQvSWJ0P4cMmuQiJIgA8rykYbrAKnBkZqObvgM=`)

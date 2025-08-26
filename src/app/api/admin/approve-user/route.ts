@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       .update({
         is_approved: true,
         approved_at: new Date().toISOString(),
-        approved_by: session.user.id,
+        approved_by: session.user.email || 'admin',
         role: 'USER'
       })
       .eq('id', userId);

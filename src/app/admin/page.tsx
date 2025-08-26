@@ -50,11 +50,11 @@ export default function AdminDashboard() {
     }
   }, [session, status, router]);
 
-  const isAdmin = (user: any) => {
+  const isAdmin = (user: { email?: string | null }) => {
     // For now, let's check if the user email is in a list of admin emails
     // In production, you'd check the user's role from the database
     const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com']; // Add your admin emails
-    return adminEmails.includes(user.email);
+    return user.email ? adminEmails.includes(user.email) : false;
   };
 
   const loadUsers = useCallback(async () => {

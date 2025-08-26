@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const loadUserData = useCallback(async () => {
     try {
       setLoading(true);
-      const userId = (session?.user as any)?.id;
+      const userId = (session?.user as { id: string })?.id;
       
       // Load events created by the user (with pagination to prevent timeouts)
       const events = await EventsService.getEvents(50, 0); // Limit to 50 events
@@ -37,7 +37,7 @@ export default function DashboardPage() {
               userRSVPData.push({
                 ...rsvp,
                 event: event
-              } as any);
+              } as EventRSVP);
             }
           } catch (error) {
             console.error(`Failed to get RSVP status for event ${event.id}:`, error);
@@ -63,7 +63,7 @@ export default function DashboardPage() {
     if (!session?.user) return;
     
     try {
-      const userId = (session.user as any).id;
+      const userId = (session.user as { id: string }).id;
       await EventsService.rsvpToEvent(eventId, userId, newStatus);
       
       // Refresh the data
@@ -77,15 +77,22 @@ export default function DashboardPage() {
     if (!session?.user) return;
     
     try {
-      const userId = (session.user as any).id;
+      const userId = (session.user as { id: string }).id;
       await EventsService.rsvpToEvent(eventId, userId, 'not_going');
       
       // Refresh the data
-      await loadUserData();
+      loadUserData();
     } catch (error) {
       console.error('Failed to cancel RSVP:', error);
     }
   }, [session?.user, loadUserData]);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/welcome');
+    }
+  }, [status, router]);
 
   // Show loading state while checking authentication
   if (status === 'loading') {
@@ -95,13 +102,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/welcome');
-    }
-  }, [status, router]);
 
   if (status === 'unauthenticated') {
     return (

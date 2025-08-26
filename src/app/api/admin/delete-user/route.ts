@@ -23,8 +23,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    // Prevent admin from deleting themselves
-    if (userId === session.user.id) {
+    // Prevent admin from deleting themselves (we'll use email since session doesn't have id)
+    // This is a simplified check - in production you might want to fetch the user's email by userId first
+    const { data: userToDelete } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+    
+    if (userToDelete?.email === session.user.email) {
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 

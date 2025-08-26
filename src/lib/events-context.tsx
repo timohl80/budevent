@@ -18,6 +18,9 @@ const initialEvents: EventLite[] = [
     startsAt: '2024-02-15T18:00:00Z',
     location: 'Downtown Conference Center',
     description: 'Join us for an evening of learning about Next.js best practices, performance optimization, and real-world applications. Network with fellow developers and share your experiences.',
+    isPublic: true,
+    status: 'active',
+    userId: 'admin',
   },
   {
     id: '2',
@@ -25,6 +28,9 @@ const initialEvents: EventLite[] = [
     startsAt: '2024-02-18T10:00:00Z',
     location: 'Community Garden Park',
     description: 'Learn sustainable gardening techniques, composting methods, and how to grow your own vegetables. Perfect for beginners and experienced gardeners alike.',
+    isPublic: true,
+    status: 'active',
+    userId: 'admin',
   },
   {
     id: '3',
@@ -32,6 +38,9 @@ const initialEvents: EventLite[] = [
     startsAt: '2024-02-20T16:00:00Z',
     location: 'Riverside Amphitheater',
     description: 'A day filled with local bands, food trucks, and community spirit. Bring your family and friends for an unforgettable musical experience.',
+    isPublic: true,
+    status: 'active',
+    userId: 'admin',
   },
   {
     id: '4',
@@ -39,6 +48,9 @@ const initialEvents: EventLite[] = [
     startsAt: '2024-02-22T19:00:00Z',
     location: 'Central Library',
     description: 'Discuss the latest science fiction novels, share your thoughts on futuristic themes, and discover new authors in this genre.',
+    isPublic: true,
+    status: 'active',
+    userId: 'admin',
   },
 ];
 

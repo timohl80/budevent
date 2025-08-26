@@ -1,48 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Check if user is authenticated and is admin
     const session = await getServerSession(authOptions);
+    
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin (you can implement your own admin check logic)
+    // Check if user is admin (you'll need to implement this check)
+    // For now, let's check if the user email is in a list of admin emails
     const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
-    if (!adminEmails.includes(session.user.email!)) {
+    if (!adminEmails.includes(session.user.email || '')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch approved users from Supabase
+    // Fetch users whose accounts have been approved
+    const { createClient } = await import('@supabase/supabase-js');
+    
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const { data: users, error } = await supabase
       .from('users')
-      .select('id, name, email, is_approved, approved_at, role, created_at')
+      .select('id, email, name, role, created_at, approved_at, approved_by')
       .eq('is_approved', true)
-      .order('created_at', { ascending: false });
+      .order('approved_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching approved users:', error);
+      console.error('Supabase error:', error);
       return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
     }
 
-    // Transform the data to match our interface
-    const approvedUsers = users.map(user => ({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      isApproved: user.is_approved,
-      approvedAt: user.approved_at,
-      role: user.role || 'USER',
-      createdAt: user.created_at,
-    }));
-
-    return NextResponse.json({ users: approvedUsers });
+    return NextResponse.json({ users: users || [] });
   } catch (error) {
-    console.error('Error in approved-users API:', error);
+    console.error('API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

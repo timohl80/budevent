@@ -11,7 +11,7 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const { data: session } = useSession();
-  const isOwner = (session?.user as any)?.id === event.userId;
+  const isOwner = (session?.user as { id: string })?.id === event.userId;
   
 
   
@@ -19,7 +19,14 @@ export default function EventCard({ event }: EventCardProps) {
   const [imageSrc, setImageSrc] = useState<string>('');
   const [rsvpStatus, setRsvpStatus] = useState<'going' | 'maybe' | 'not_going' | null>(null);
   const [isRsvping, setIsRsvping] = useState(false);
-  const [rsvps, setRsvps] = useState<any[]>([]);
+  const [rsvps, setRsvps] = useState<Array<{
+    id: string;
+    userId: string;
+    eventId: string;
+    status: string;
+    createdAt: string;
+    user?: { name: string; email: string };
+  }>>([]);
   const [isLoadingRsvps, setIsLoadingRsvps] = useState(false);
   const [showRsvpList, setShowRsvpList] = useState(false);
   
@@ -71,7 +78,7 @@ export default function EventCard({ event }: EventCardProps) {
     if (!session?.user) return;
     
     try {
-      const userRsvp = await EventsService.getUserRSVPStatus(event.id, (session.user as any).id);
+      const userRsvp = await EventsService.getUserRSVPStatus(event.id, (session.user as { id: string }).id);
       if (userRsvp) {
         setRsvpStatus(userRsvp.status);
       } else {
@@ -100,7 +107,7 @@ export default function EventCard({ event }: EventCardProps) {
     
     setIsRsvping(true);
     try {
-      await EventsService.rsvpToEvent(event.id, (session.user as any).id, status);
+      await EventsService.rsvpToEvent(event.id, (session.user as { id: string }).id, status);
       setRsvpStatus(status);
       
       // Send confirmation email if user is going or maybe
@@ -341,7 +348,7 @@ export default function EventCard({ event }: EventCardProps) {
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                       <span className="font-medium text-gray-900 truncate">
-                        {rsvp.users?.name || rsvp.users?.email || 'Unknown User'}
+                        {rsvp.user?.name || rsvp.user?.email || 'Unknown User'}
                       </span>
                     </div>
                     <span className="px-2.5 py-1 text-xs font-medium rounded-full flex-shrink-0 bg-green-100 text-green-800 border border-green-200">

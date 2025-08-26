@@ -15,7 +15,7 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting by IP address
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     const rateLimit = checkRateLimit(`register:${ip}`, 3, 15 * 60 * 1000); // 3 attempts per 15 minutes
     
     if (!rateLimit.allowed) {
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
+        { error: 'Validation failed', details: error.issues },
         { status: 400 }
       )
     }

@@ -12,7 +12,7 @@ export async function getCurrentUser() {
   // For now, return a simple user object since we're not using Prisma
   // In production, you'd fetch from Supabase
   return {
-    id: session.user.id,
+    id: session.user.email, // Use email as ID since session doesn't have id
     email: session.user.email,
     name: session.user.name,
   }

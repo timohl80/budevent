@@ -1,14 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { EmailService } from '@/lib/email-service';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    // Debug: Check if API key is available
-    console.log('=== TEST EMAIL DEBUG ===');
-    console.log('RESEND_API_KEY available:', !!process.env.RESEND_API_KEY);
-    console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length || 0);
-    console.log('RESEND_API_KEY starts with:', process.env.RESEND_API_KEY?.substring(0, 3) || 'N/A');
-    
     // Test email data
     const testEmailData = {
       eventName: 'Test Event',
@@ -21,12 +15,8 @@ export async function POST(request: NextRequest) {
       eventId: 'test-event-123'
     };
 
-    console.log('Sending test email with data:', testEmailData);
-
-    console.log('About to call EmailService.sendRSVPConfirmation...');
     const success = await EmailService.sendRSVPConfirmation(testEmailData);
-    console.log('Email service result:', success);
-
+    
     if (success) {
       return NextResponse.json({ 
         success: true, 
@@ -39,11 +29,10 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
   } catch (error) {
-    console.error('Test email error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Error testing email service', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
+    console.error('Failed to send test email:', error);
+    return NextResponse.json(
+      { error: 'Failed to send test email' },
+      { status: 500 }
+    );
   }
 }
