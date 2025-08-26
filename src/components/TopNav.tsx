@@ -49,39 +49,84 @@ export default function TopNav() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Check if user is admin
+  const isAdmin = (user: any) => {
+    const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
+    return adminEmails.includes(user.email);
+  };
+
   return (
-    <nav className="relative bg-gradient-to-r from-[#A29BFE] via-[#A29BFE] to-[#55EFC4] shadow-lg">
+    <nav className="relative bg-[#111827] border-b border-[#374151] shadow-lg">
       <div className="flex items-center justify-between px-4 py-4">
         {/* Logo */}
         <Link 
           href="/" 
-          className="text-xl font-bold text-white hover:text-gray-100 transition-colors"
+          className="text-xl font-bold text-[#3B82F6] hover:text-[#60A5FA] transition-colors"
         >
           BudEvent
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
+          {session ? (
+            <>
+              <Link 
+                href="/" 
+                className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+              >
+                Home
+              </Link>
+              <Link 
+                href="/events" 
+                className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+              >
+                Events
+              </Link>
+            </>
+          ) : (
+            <Link 
+              href="/welcome" 
+              className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+            >
+              Welcome
+            </Link>
+          )}
+          {session && (
+            <Link 
+              href="/dashboard" 
+              className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+            >
+              Dashboard
+            </Link>
+          )}
+          {session && isAdmin(session.user) && (
+            <Link 
+              href="/admin" 
+              className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+            >
+              Admin
+            </Link>
+          )}
           <Link 
-            href="/" 
-            className="text-white hover:text-gray-100 transition-colors"
+            href="/test-database" 
+            className="text-[#9CA3AF] hover:text-[#DB2777] transition-colors text-sm"
           >
-            Home
+            Test DB
           </Link>
           <Link 
-            href="/events" 
-            className="text-white hover:text-gray-100 transition-colors"
+            href="/test-calendar" 
+            className="text-[#9CA3AF] hover:text-[#DB2777] transition-colors text-sm"
           >
-            Events
+            Test Calendar
           </Link>
           {session ? (
             <div className="flex items-center space-x-4">
-              <span className="text-white text-sm">
+              <span className="text-[#F3F4F6] text-sm">
                 Welcome, {session.user?.name || session.user?.email}
               </span>
               <button 
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#2D3436] bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#DB2777] rounded-lg hover:bg-[#BE185D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DB2777] transition-colors"
               >
                 Sign out
               </button>
@@ -89,7 +134,7 @@ export default function TopNav() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#2D3436] bg-white rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#3B82F6] rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors"
             >
               Sign in
             </Link>
@@ -103,10 +148,10 @@ export default function TopNav() {
           aria-label="Toggle menu"
           aria-expanded={isMenuOpen}
           aria-controls="mobile-menu"
-          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6]"
         >
           <svg
-            className="h-5 w-5 text-white"
+            className="h-5 w-5 text-[#F3F4F6]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -136,29 +181,68 @@ export default function TopNav() {
         <div
           ref={menuRef}
           id="mobile-menu"
-          className="absolute left-0 right-0 top-full z-50 rounded-xl border border-gray-200 bg-white p-2 shadow-lg md:hidden"
+          className="absolute left-0 right-0 top-full z-50 rounded-xl border border-[#374151] bg-[#1F2937] p-2 shadow-lg md:hidden"
         >
           <div className="space-y-2">
+            {session ? (
+              <>
+                <Link
+                  href="/"
+                  className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/events"
+                  className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+                >
+                  Events
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/welcome"
+                className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+              >
+                Welcome
+              </Link>
+            )}
+            {session && (
+              <Link
+                href="/dashboard"
+                className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
+            {session && isAdmin(session.user) && (
+              <Link
+                href="/admin"
+                className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+              >
+                Admin
+              </Link>
+            )}
             <Link
-              href="/"
-              className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              href="/test-database"
+              className="block px-3 py-2 text-[#9CA3AF] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors text-sm"
             >
-              Home
+              Test DB
             </Link>
             <Link
-              href="/events"
-              className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              href="/test-calendar"
+              className="block px-3 py-2 text-[#9CA3AF] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors text-sm"
             >
-              Events
+              Test Calendar
             </Link>
             {session ? (
               <div className="space-y-2">
-                <div className="px-3 py-2 text-sm text-gray-700 border-b border-gray-200">
+                <div className="px-3 py-2 text-sm text-[#9CA3AF] border-b border-[#374151]">
                   Welcome, {session.user?.name || session.user?.email}
                 </div>
                 <button 
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
                 >
                   Sign out
                 </button>
@@ -166,7 +250,7 @@ export default function TopNav() {
             ) : (
               <Link
                 href="/login"
-                className="block px-3 py-2 text-sm font-medium text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                className="block px-3 py-2 text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] hover:bg-[#374151] rounded-lg transition-colors"
               >
                 Sign in
               </Link>

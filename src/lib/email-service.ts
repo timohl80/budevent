@@ -3,15 +3,86 @@ import { Resend } from 'resend';
 // This will only be used on the server side
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+// Generate ICS file content for calendar events
+function generateICSContent(event: {
+  title: string;
+  description?: string;
+  startsAt: string;
+  endsAt?: string;
+  location?: string;
+  organizerName?: string;
+  organizerEmail?: string;
+}) {
+  const formatDate = (date: string) => {
+    return new Date(date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const startDate = formatDate(event.startsAt);
+  const endDate = event.endsAt ? formatDate(event.endsAt) : formatDate(new Date(new Date(event.startsAt).getTime() + 2 * 60 * 60 * 1000).toISOString()); // Default 2 hours if no end time
+
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//BudEvent//Calendar Event//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${Date.now()}@budevent.com`,
+    `DTSTART:${startDate}`,
+    `DTEND:${endDate}`,
+    `SUMMARY:${event.title}`,
+    event.description ? `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}` : '',
+    event.location ? `LOCATION:${event.location}` : '',
+    event.organizerName ? `ORGANIZER;CN=${event.organizerName}:mailto:${event.organizerEmail || 'noreply@budevent.com'}` : '',
+    `DTSTAMP:${formatDate(new Date().toISOString())}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].filter(Boolean).join('\r\n');
+
+  return icsContent;
+}
+
+// Generate add-to-calendar links
+function generateCalendarLinks(event: {
+  title: string;
+  description?: string;
+  startsAt: string;
+  endsAt?: string;
+  location?: string;
+}) {
+  const startDate = new Date(event.startsAt);
+  const endDate = event.endsAt ? new Date(event.endsAt) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  
+  const formatDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const title = encodeURIComponent(event.title);
+  const description = encodeURIComponent(event.description || '');
+  const location = encodeURIComponent(event.location || '');
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
+
+  return {
+    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`,
+    outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&startdt=${start}&enddt=${end}&body=${description}&location=${location}`,
+    apple: `data:text/calendar;charset=utf8,BEGIN:VCALENDAR%0AVERSION:2.0%0ABEGIN:VEVENT%0ADTSTART:${start}%0ADTEND:${end}%0ASUMMARY:${title}%0ADESCRIPTION:${description}%0ALOCATION:${location}%0AEND:VEVENT%0AEND:VCALENDAR`
+  };
+}
+
 export interface EventEmailData {
   eventName: string;
-  eventDate: string;
-  eventTime: string;
+  eventDate: string; // Formatted display date
+  eventTime: string; // Formatted display time
   eventLocation?: string;
   eventDescription?: string;
   userName: string;
   userEmail: string;
   eventId: string;
+  eventStartISO?: string; // ISO string for calendar
+  eventEndISO?: string; // ISO string for calendar
+  organizerName?: string;
+  organizerEmail?: string;
 }
 
 export class EmailService {
@@ -25,11 +96,32 @@ export class EmailService {
     }
 
     try {
+      // Generate calendar data
+      const event = {
+        title: data.eventName,
+        description: data.eventDescription,
+        startsAt: data.eventStartISO || data.eventDate,
+        endsAt: data.eventEndISO || data.eventDate,
+        location: data.eventLocation,
+        organizerName: data.organizerName,
+        organizerEmail: data.organizerEmail
+      };
+
+      const icsContent = generateICSContent(event);
+      const calendarLinks = generateCalendarLinks(event);
+
       const { data: result, error } = await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: [data.userEmail],
         subject: `You're signed up for ${data.eventName}! 🎉`,
-        html: this.generateRSVPEmailHTML(data),
+        html: this.generateRSVPEmailHTML(data, calendarLinks),
+        attachments: [
+          {
+            filename: `${data.eventName.replace(/[^a-zA-Z0-9]/g, '_')}.ics`,
+            content: Buffer.from(icsContent, 'utf-8').toString('base64'),
+            contentType: 'text/calendar'
+          }
+        ]
       });
 
       if (error) {
@@ -48,7 +140,7 @@ export class EmailService {
   /**
    * Generate beautiful HTML email for RSVP confirmation
    */
-  private static generateRSVPEmailHTML(data: EventEmailData): string {
+  private static generateRSVPEmailHTML(data: EventEmailData, calendarLinks?: ReturnType<typeof generateCalendarLinks>): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -144,6 +236,42 @@ export class EmailService {
           .cta-button:hover {
             transform: translateY(-2px);
           }
+          .calendar-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #e9ecef;
+          }
+          .calendar-section h3 {
+            margin: 0 0 20px 0;
+            color: #2D3436;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+          }
+          .calendar-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+          }
+          .calendar-button {
+            display: inline-block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+          }
+          .calendar-button:hover {
+            opacity: 0.9;
+          }
+          .calendar-button.google { background-color: #4285F4; }
+          .calendar-button.outlook { background-color: #0078D4; }
+          .calendar-button.apple { background-color: #000000; }
           .footer {
             background-color: #f8f9fa;
             padding: 25px 30px;
@@ -165,6 +293,15 @@ export class EmailService {
             }
             .header h1 {
               font-size: 24px;
+            }
+            .calendar-buttons {
+              flex-direction: column;
+              align-items: center;
+            }
+            .calendar-button {
+              width: 100%;
+              max-width: 200px;
+              text-align: center;
             }
           }
         </style>
@@ -217,6 +354,30 @@ export class EmailService {
             </div>
             
             <p>We'll send you a reminder closer to the event date. If you need to make any changes to your RSVP, you can do so from your event dashboard.</p>
+            
+            ${calendarLinks ? `
+            <div class="calendar-section">
+              <h3>📱 Add to Your Calendar</h3>
+              
+              <div class="calendar-buttons">
+                <a href="${calendarLinks.google}" target="_blank" class="calendar-button google">
+                  📅 Google Calendar
+                </a>
+                
+                <a href="${calendarLinks.outlook}" target="_blank" class="calendar-button outlook">
+                  📅 Outlook
+                </a>
+                
+                <a href="${calendarLinks.apple}" class="calendar-button apple">
+                  📅 Apple Calendar
+                </a>
+              </div>
+              
+              <p style="color: #6B7280; font-size: 14px; text-align: center; margin: 0;">
+                📥 A calendar file (.ics) is attached to this email for easy import
+              </p>
+            </div>
+            ` : ''}
             
             <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/events" class="cta-button">
               View All Events

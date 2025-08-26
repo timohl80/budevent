@@ -20,13 +20,19 @@ export const authOptions: NextAuthOptions = {
           // Query Supabase for user
           const { data: users, error } = await supabase
             .from('users')
-            .select('id, email, name, password_hash')
+            .select('id, email, name, password_hash, is_approved, role')
             .eq('email', credentials.email)
             .single()
 
           if (error || !users) {
             console.log('User not found:', credentials.email)
             return null
+          }
+
+          // Check if user is approved
+          if (!users.is_approved) {
+            console.log('User not approved:', credentials.email)
+            throw new Error('Account pending approval. Please wait for admin approval before logging in.');
           }
 
           // Verify password
@@ -40,6 +46,8 @@ export const authOptions: NextAuthOptions = {
               id: users.id,
               email: users.email,
               name: users.name,
+              role: users.role,
+              isApproved: users.is_approved,
             }
           }
 
@@ -72,7 +80,7 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: '/login',
+    signIn: '/welcome',
   },
   secret: process.env.NEXTAUTH_SECRET,
   // Security options

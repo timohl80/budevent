@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+/* Custom color variables */
+:root {
+  --primary: #3B82F6;
+  --accent: #DB2777;
+  --background: #111827;
+  --text: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --card-bg: #1F2937;
+  --border: #374151;
+}

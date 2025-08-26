@@ -56,17 +56,20 @@ export class EventsService {
     };
   }
 
-  // Get all events
-  static async getEvents(): Promise<EventLite[]> {
+  // Get all events with pagination and timeout handling
+  static async getEvents(limit: number = 100, offset: number = 0): Promise<EventLite[]> {
     console.log('Attempting to fetch events from Supabase...');
     console.log('Supabase client:', !!supabase);
     console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
     
     try {
+      // Add timeout and pagination to prevent long-running queries
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .order('starts_at', { ascending: true });
+        .order('starts_at', { ascending: true })
+        .range(offset, offset + limit - 1)
+        .limit(limit);
 
       console.log('Fetch events response:', { 
         data: data ? `${data.length} events` : 'null', 
@@ -113,6 +116,25 @@ export class EventsService {
         console.error('Error stack:', err.stack);
       }
       throw err;
+    }
+  }
+
+  // Get total count of events (faster than counting all records)
+  static async getEventsCount(): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        console.error('Error getting events count:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (err) {
+      console.error('Exception getting events count:', err);
+      return 0;
     }
   }
 

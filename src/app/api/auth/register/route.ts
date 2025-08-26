@@ -48,13 +48,15 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12)
 
-    // Create user in Supabase
+    // Create user in Supabase with pending approval status
     const { data: user, error: createError } = await supabase
       .from('users')
       .insert({
         name,
         email,
         password_hash: passwordHash,
+        is_approved: false, // New users start as pending approval
+        role: 'USER',
       })
       .select('id, name, email, created_at')
       .single()
@@ -68,7 +70,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { message: 'User created successfully', user },
+      { 
+        message: 'Registration successful! Your account is pending admin approval. You will receive an email when your account is approved.',
+        user,
+        requiresApproval: true
+      },
       { status: 201 }
     )
   } catch (error) {

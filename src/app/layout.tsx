@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} min-h-screen bg-[#FAF9F6] text-[#2D3436] antialiased`}>
         <SessionProvider>
-          <div className="max-w-3xl mx-auto p-4">
+          <div className="w-full">
             <TopNav />
             {children}
           </div>

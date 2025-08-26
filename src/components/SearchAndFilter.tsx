@@ -72,10 +72,13 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
   }, [filters.category, filters.dateRange, filters.location, filters.sortBy, onFiltersChange]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    
+    // If clearing a filter and no other active filters, show all events immediately
+    if (!value && !newFilters.searchQuery && !newFilters.category && !newFilters.dateRange && !newFilters.location && newFilters.sortBy === 'date') {
+      onFiltersChange(newFilters);
+    }
   };
 
   // Debounced search to prevent rapid API calls
@@ -107,13 +110,18 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
   };
 
   const clearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       searchQuery: '',
       category: '',
       dateRange: '',
       location: '',
       sortBy: 'date'
-    });
+    };
+    
+    setFilters(clearedFilters);
+    
+    // Immediately trigger filter change to show all events
+    onFiltersChange(clearedFilters);
   };
 
   const hasActiveFilters = filters.searchQuery || filters.category || filters.dateRange || filters.location || filters.sortBy !== 'date';

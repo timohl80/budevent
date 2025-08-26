@@ -1,0 +1,21 @@
+# 🚀 Production Environment Variables for Vercel
+# Copy these to your Vercel dashboard environment variables
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# NextAuth Configuration
+NEXTAUTH_SECRET=your_very_long_random_secret_here_minimum_32_chars
+NEXTAUTH_URL=https://your-domain.vercel.app
+
+# Database Configuration (for Prisma)
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+
+# Resend Email Service Configuration
+RESEND_API_KEY=your_resend_api_key_here
+
+# Optional: Analytics (if you want to add them later)
+# NEXT_PUBLIC_GA_ID=your_google_analytics_id
+# NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key

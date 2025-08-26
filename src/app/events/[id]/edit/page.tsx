@@ -75,10 +75,10 @@ export default function EditEventPage() {
     }
   }, [session, eventId]);
 
-  // Redirect to login if not authenticated
+  // Redirect to welcome page if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.push('/welcome');
     }
   }, [status, router]);
 

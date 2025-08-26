@@ -56,10 +56,18 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(result.error || 'Registration failed');
       } else {
-        setSuccess('Account created successfully! Redirecting to login...');
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
+        if (result.requiresApproval) {
+          setSuccess('Registration successful! Your account is pending admin approval. You will receive an email when your account is approved.');
+          // Don't redirect immediately - let user read the message
+          setTimeout(() => {
+            router.push('/welcome');
+          }, 5000);
+        } else {
+          setSuccess('Account created successfully! Redirecting to login...');
+          setTimeout(() => {
+            router.push('/welcome');
+          }, 2000);
+        }
       }
     } catch (error) {
       setError('An unexpected error occurred');

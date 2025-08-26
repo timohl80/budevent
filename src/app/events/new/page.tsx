@@ -35,10 +35,10 @@ function CreateEventForm() {
   }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect to login if not authenticated
+  // Redirect to welcome page if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login');
+      router.push('/welcome');
     }
   }, [status, router]);
 
@@ -101,8 +101,8 @@ function CreateEventForm() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Redirect back to events page
-    router.push('/events');
+    // Redirect to home page to show the new event
+    router.push('/');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

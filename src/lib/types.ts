@@ -2,6 +2,7 @@ export interface EventLite {
   id: string;
   title: string;
   startsAt: string; // ISO string
+  endsAt?: string; // ISO string for end time
   location?: string;
   description?: string;
   imageUrl?: string;
@@ -11,6 +12,8 @@ export interface EventLite {
   rsvpCount?: number;
   commentCount?: number;
   userId: string;
+  organizerName?: string;
+  organizerEmail?: string;
 }
 
 // Type for creating events (without id and userId)
