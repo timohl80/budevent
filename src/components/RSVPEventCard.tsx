@@ -4,7 +4,7 @@ import Link from 'next/link';
 import ShareButton from './ShareButton';
 
 interface RSVPEventCardProps {
-  rsvp: EventRSVP & { event?: any };
+  rsvp: EventRSVP & { event?: EventLite };
   onRSVPUpdate: (eventId: string, status: 'going' | 'maybe' | 'not_going') => void;
   onRSVPCancel: (eventId: string) => void;
 }

@@ -50,9 +50,9 @@ export default function TopNav() {
   };
 
   // Check if user is admin
-  const isAdmin = (user: any) => {
+  const isAdmin = (user: { email?: string | null }) => {
     const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
-    return adminEmails.includes(user.email);
+          return user.email ? adminEmails.includes(user.email) : false;
   };
 
   return (
@@ -99,7 +99,7 @@ export default function TopNav() {
               Dashboard
             </Link>
           )}
-          {session && isAdmin(session.user) && (
+          {session && session.user && isAdmin(session.user) && (
             <Link 
               href="/admin" 
               className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
@@ -215,7 +215,7 @@ export default function TopNav() {
                 Dashboard
               </Link>
             )}
-            {session && isAdmin(session.user) && (
+            {session && session.user && isAdmin(session.user) && (
               <Link
                 href="/admin"
                 className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
