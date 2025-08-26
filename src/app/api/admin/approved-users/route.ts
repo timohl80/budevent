@@ -4,6 +4,12 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET() {
   try {
+    // Validate environment variables
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase environment variables');
+      return NextResponse.json({ error: 'Configuration error' }, { status: 500 });
+    }
+
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {
@@ -21,8 +27,8 @@ export async function GET() {
     const { createClient } = await import('@supabase/supabase-js');
     
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
 
     const { data: users, error } = await supabase

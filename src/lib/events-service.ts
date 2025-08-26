@@ -60,7 +60,6 @@ export class EventsService {
   static async getEvents(limit: number = 100, offset: number = 0): Promise<EventLite[]> {
     console.log('Attempting to fetch events from Supabase...');
     console.log('Supabase client:', !!supabase);
-    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
     
     try {
       // Add timeout and pagination to prevent long-running queries
