@@ -52,7 +52,7 @@ export class StorageService {
       const filePath = `${fileName}`;
 
       // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, file, {
           cacheControl: '3600',

@@ -408,7 +408,7 @@ export class EmailService {
     }
 
     try {
-      const { data, error } = await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: 'onboarding@resend.dev',
         to: ['test@example.com'],
         subject: 'Test Email',

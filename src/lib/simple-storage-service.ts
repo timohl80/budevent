@@ -4,7 +4,7 @@ export class SimpleStorageService {
   private static BUCKET_NAME = 'event-images-v2';
 
   // Use optimized base64 for reliable storage
-  static async uploadImage(file: File, eventId: string): Promise<string> {
+  static async uploadImage(file: File, _eventId: string): Promise<string> {
     try {
       console.log('🚀🚀🚀 SIMPLE STORAGE SERVICE CALLED 🚀🚀🚀');
       console.log('=== UPLOAD START ===');

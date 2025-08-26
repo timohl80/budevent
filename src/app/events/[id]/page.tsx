@@ -58,7 +58,7 @@ export default function EventDetailPage() {
     try {
       const userRsvp = await EventsService.getUserRSVPStatus(eventId, (session.user as any).id);
       if (userRsvp) {
-        setRsvpStatus(userRsvp.status);
+        setRsvpStatus(userRsvp.status as 'going' | 'maybe' | 'not_going');
       } else {
         setRsvpStatus(null);
       }

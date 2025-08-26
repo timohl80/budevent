@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Testing Supabase connection...');
   (async () => {
     try {
-      const { data, error } = await supabase.from('events').select('count').limit(1);
+      const { error } = await supabase.from('events').select('count').limit(1);
       if (error) {
         console.error('Supabase connection test failed:', error);
       } else {

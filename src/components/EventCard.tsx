@@ -21,11 +21,11 @@ export default function EventCard({ event }: EventCardProps) {
   const [isRsvping, setIsRsvping] = useState(false);
   const [rsvps, setRsvps] = useState<Array<{
     id: string;
-    userId: string;
-    eventId: string;
+    event_id: string;
+    user_id: string;
     status: string;
-    createdAt: string;
-    user?: { name: string; email: string };
+    created_at: string;
+    users?: { id: string; name: string; email: string };
   }>>([]);
   const [isLoadingRsvps, setIsLoadingRsvps] = useState(false);
   const [showRsvpList, setShowRsvpList] = useState(false);
@@ -80,7 +80,7 @@ export default function EventCard({ event }: EventCardProps) {
     try {
       const userRsvp = await EventsService.getUserRSVPStatus(event.id, (session.user as { id: string }).id);
       if (userRsvp) {
-        setRsvpStatus(userRsvp.status);
+        setRsvpStatus(userRsvp.status as 'going' | 'maybe' | 'not_going');
       } else {
         setRsvpStatus(null);
       }
@@ -348,7 +348,7 @@ export default function EventCard({ event }: EventCardProps) {
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                       <span className="font-medium text-gray-900 truncate">
-                        {rsvp.user?.name || rsvp.user?.email || 'Unknown User'}
+                        {rsvp.users?.name || rsvp.users?.email || 'Unknown User'}
                       </span>
                     </div>
                     <span className="px-2.5 py-1 text-xs font-medium rounded-full flex-shrink-0 bg-green-100 text-green-800 border border-green-200">

@@ -35,7 +35,11 @@ export default function DashboardPage() {
             const rsvp = await EventsService.getUserRSVPStatus(event.id, userId);
             if (rsvp) {
               userRSVPData.push({
-                ...rsvp,
+                id: rsvp.id,
+                eventId: rsvp.event_id,
+                userId: rsvp.user_id,
+                status: rsvp.status as 'going' | 'maybe' | 'not_going',
+                createdAt: rsvp.created_at,
                 event: event
               } as EventRSVP);
             }

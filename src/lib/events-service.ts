@@ -9,7 +9,7 @@ export class EventsService {
   static async testConnection(): Promise<boolean> {
     try {
       console.log('Testing Supabase connection...');
-      const { data, error } = await supabase.from('events').select('count').limit(1);
+      const { error } = await supabase.from('events').select('count').limit(1);
       
       if (error) {
         console.error('Connection test failed:', error);
@@ -449,7 +449,14 @@ export class EventsService {
     }
   }
 
-  static async getEventRSVPs(eventId: string): Promise<any[]> {
+  static async getEventRSVPs(eventId: string): Promise<Array<{
+    id: string;
+    event_id: string;
+    user_id: string;
+    status: string;
+    created_at: string;
+    users?: { id: string; name: string; email: string };
+  }>> {
     const { data, error } = await supabase
       .from('event_rsvps')
       .select(`
@@ -467,7 +474,13 @@ export class EventsService {
     return data || [];
   }
 
-  static async getUserRSVPStatus(eventId: string, userId: string): Promise<any> {
+  static async getUserRSVPStatus(eventId: string, userId: string): Promise<{
+    id: string;
+    event_id: string;
+    user_id: string;
+    status: string;
+    created_at: string;
+  } | null> {
     const { data, error } = await supabase
       .from('event_rsvps')
       .select('*')
@@ -500,7 +513,15 @@ export class EventsService {
     }
   }
 
-  static async getEventComments(eventId: string): Promise<any[]> {
+  static async getEventComments(eventId: string): Promise<Array<{
+    id: string;
+    event_id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+    parent_id?: string;
+    users?: { id: string; name: string; email: string };
+  }>> {
     const { data, error } = await supabase
       .from('event_comments')
       .select(`
@@ -519,7 +540,15 @@ export class EventsService {
     return data || [];
   }
 
-  static async getCommentReplies(commentId: string): Promise<any[]> {
+  static async getCommentReplies(commentId: string): Promise<Array<{
+    id: string;
+    event_id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+    parent_id: string;
+    users?: { id: string; name: string; email: string };
+  }>> {
     const { data, error } = await supabase
       .from('event_comments')
       .select(`
