@@ -4,13 +4,14 @@ import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
 
-// Add this temporarily to your auth config to debug
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 10) + '...');
-console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
-
-// Create providers array dynamically
-function createProviders() {
-  const providers: any[] = [
+export const authOptions: NextAuthOptions = {
+  providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    ] : []),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -65,28 +66,7 @@ function createProviders() {
         }
       }
     })
-  ]
-
-  // Only add Google provider if credentials are available
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    console.log('=== GOOGLE PROVIDER INITIALIZED ===')
-    console.log('✅ Google OAuth is available')
-    providers.unshift(GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }))
-  } else {
-    console.log('=== GOOGLE PROVIDER NOT AVAILABLE ===')
-    console.log('❌ GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING')
-    console.log('❌ GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING')
-    console.log('ℹ️ Google Sign-In will not be available')
-  }
-
-  return providers
-}
-
-export const authOptions: NextAuthOptions = {
-  providers: createProviders(),
+  ],
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 1 day (more secure)
