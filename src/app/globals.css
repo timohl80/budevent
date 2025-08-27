@@ -2,11 +2,10 @@
 
 /* Custom color variables */
 :root {
-  --primary: #3B82F6;
-  --accent: #DB2777;
-  --background: #111827;
-  --text: #F3F4F6;
-  --text-secondary: #9CA3AF;
-  --card-bg: #1F2937;
-  --border: #374151;
+  --primary-blue: #60A5FA;      /* Light blue - matches logo */
+  --primary-blue-dark: #3B82F6; /* Darker blue for hover states */
+  --primary-blue-light: #93C5FD; /* Lighter blue for backgrounds */
+  --accent-blue: #1E40AF;       /* Deep blue for accents */
+  --gradient-start: #60A5FA;    /* Start of blue gradient */
+  --gradient-end: #3B82F6;      /* End of blue gradient */
 }

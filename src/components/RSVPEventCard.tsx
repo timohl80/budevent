@@ -4,18 +4,15 @@ import Link from 'next/link';
 import ShareButton from './ShareButton';
 
 interface RSVPEventCardProps {
+  event: EventLite;
   rsvp: EventRSVP & { event?: EventLite };
-  onRSVPUpdate: (eventId: string, status: 'going' | 'maybe' | 'not_going') => void;
-  onRSVPCancel: (eventId: string) => void;
+  onUpdate: (eventId: string, status: 'going' | 'maybe' | 'not_going') => void;
+  onCancel: (eventId: string) => void;
 }
 
-export default function RSVPEventCard({ rsvp, onRSVPUpdate, onRSVPCancel }: RSVPEventCardProps) {
+export default function RSVPEventCard({ event, rsvp, onUpdate, onCancel }: RSVPEventCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const event = rsvp.event;
-
-  if (!event) {
-    return null;
-  }
+  const [selectedStatus, setSelectedStatus] = useState(rsvp.status);
 
   const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -29,12 +26,47 @@ export default function RSVPEventCard({ rsvp, onRSVPUpdate, onRSVPCancel }: RSVP
     }).format(date);
   };
 
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
+  };
+
+  const handleStatusUpdate = async (newStatus: 'going' | 'maybe' | 'not_going') => {
+    if (newStatus === selectedStatus) return;
+    
+    setIsUpdating(true);
+    try {
+      await onUpdate(event.id, newStatus);
+      setSelectedStatus(newStatus);
+    } catch (error) {
+      console.error('Failed to update RSVP status:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!confirm('Are you sure you want to cancel your RSVP for this event?')) {
+      return;
+    }
+    
+    try {
+      await onCancel(event.id);
+    } catch (error) {
+      console.error('Failed to cancel RSVP:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'going': return 'bg-green-100 text-green-800';
-      case 'maybe': return 'bg-yellow-100 text-yellow-800';
-      case 'not_going': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'going': return 'bg-green-100 text-green-800 border-green-200';
+      case 'maybe': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'not_going': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -47,143 +79,126 @@ export default function RSVPEventCard({ rsvp, onRSVPUpdate, onRSVPCancel }: RSVP
     }
   };
 
-  const handleStatusUpdate = async (newStatus: 'going' | 'maybe' | 'not_going') => {
-    setIsUpdating(true);
-    try {
-      await onRSVPUpdate(event.id, newStatus);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    setIsUpdating(true);
-    try {
-      await onRSVPCancel(event.id);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* Event Image */}
-      {event.imageUrl && (
-        <div className="aspect-video bg-gray-200 overflow-hidden">
+      {event.imageUrl ? (
+        <div className="h-48 bg-gray-200 overflow-hidden relative">
           <img
             src={event.imageUrl}
             alt={event.title}
             className="w-full h-full object-cover"
           />
         </div>
+      ) : (
+        <div className="h-48 bg-gradient-to-br from-[#60A5FA] to-[#3B82F6] flex items-center justify-center">
+          <img
+            src="/BudEvent-pin.svg"
+            alt="BudEvent"
+            className="w-40 h-40 opacity-80"
+          />
+        </div>
       )}
 
       {/* Event Content */}
-      <div className="p-6">
+      <div className="p-6 bg-gradient-to-b from-white to-gray-50">
         {/* Event Title and Status */}
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-            <Link href={`/events/${event.id}`} className="hover:text-[#A29BFE] transition-colors">
-              {event.title}
-            </Link>
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 mr-3">
+            {event.title}
           </h3>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(rsvp.status)} ml-2 flex-shrink-0`}>
-            {getStatusIcon(rsvp.status)} {rsvp.status}
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(rsvp.status)}`}>
+            {getStatusIcon(rsvp.status)} {rsvp.status === 'going' ? 'going' : rsvp.status === 'maybe' ? 'maybe' : 'not going'}
           </span>
         </div>
-
-        {/* Event Details */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-600">
-            <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {formatDateTime(event.startsAt)}
-          </div>
-          
-          {event.location && (
-            <div className="flex items-center text-sm text-gray-600">
-              <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {event.location}
-            </div>
-          )}
-
-          {event.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {event.description}
-            </p>
-          )}
+        
+        {/* Date & Time */}
+        <div className="flex items-center text-gray-700 mb-3">
+          <svg className="w-4 h-4 mr-2 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="font-medium">{formatDateTime(event.startsAt)}</span>
         </div>
-
-        {/* RSVP Actions */}
-        <div className="space-y-2">
-          <div className="text-xs text-gray-500 mb-3">
-            RSVP'd on {new Date(rsvp.createdAt).toLocaleDateString()}
+        
+        {/* Location */}
+        {event.location && (
+          <div className="flex items-center text-gray-700 mb-3">
+            <svg className="w-4 h-4 mr-2 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="font-medium">{event.location}</span>
           </div>
-          
+        )}
+        
+        {/* Description */}
+        {event.description && (
+          <p className="text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+            {event.description}
+          </p>
+        )}
+        
+        {/* RSVP'd on */}
+        <div className="text-sm text-gray-500 mb-4 pb-3 border-b border-gray-200">
+          RSVP'd on {formatDate(rsvp.createdAt)}
+        </div>
+        
+        {/* RSVP Actions */}
+        <div className="space-y-3">
+          {/* Status Selection */}
           <div className="flex space-x-2">
             <button
               onClick={() => handleStatusUpdate('going')}
-              disabled={isUpdating || rsvp.status === 'going'}
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
-                rsvp.status === 'going'
-                  ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
+              disabled={isUpdating}
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                selectedStatus === 'going'
+                  ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-300 hover:bg-green-50'
               }`}
             >
               Going
             </button>
-            
             <button
               onClick={() => handleStatusUpdate('maybe')}
-              disabled={isUpdating || rsvp.status === 'maybe'}
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
-                rsvp.status === 'maybe'
-                  ? 'bg-yellow-100 text-yellow-700 cursor-not-allowed'
-                  : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+              disabled={isUpdating}
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                selectedStatus === 'maybe'
+                  ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50'
               }`}
             >
               Maybe
             </button>
-            
             <button
               onClick={() => handleStatusUpdate('not_going')}
-              disabled={isUpdating || rsvp.status === 'not_going'}
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
-                rsvp.status === 'not_going'
-                  ? 'bg-red-100 text-red-700 cursor-not-allowed'
-                  : 'bg-red-50 text-red-700 hover:bg-red-100'
+              disabled={isUpdating}
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                selectedStatus === 'not_going'
+                  ? 'bg-red-100 text-red-800 border-2 border-red-300'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-red-300 hover:bg-red-50'
               }`}
             >
               Not Going
             </button>
           </div>
-
-          <button
-            onClick={handleCancel}
-            disabled={isUpdating}
-            className="w-full px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel RSVP
-          </button>
-        </div>
-
-        {/* Share Button */}
-        <div className="mt-3">
-          <ShareButton event={event} />
-        </div>
-
-        {/* View Event Button */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <Link
-            href={`/events/${event.id}`}
-            className="block w-full text-center px-4 py-2 text-sm font-medium text-[#A29BFE] bg-[#A29BFE]/10 rounded-md hover:bg-[#A29BFE]/20 transition-colors"
-          >
-            View Event Details
-          </Link>
+          
+          {/* Action Buttons */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleCancel}
+              disabled={isUpdating}
+              className="flex-1 py-2 px-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+            >
+              Cancel RSVP
+            </button>
+            <ShareButton event={event} />
+            <Link
+              href={`/events/${event.id}`}
+              className="py-2 px-4 bg-[#60A5FA] text-white rounded-lg text-sm font-medium hover:bg-[#4B89E8] transition-colors"
+            >
+              View Event Details
+            </Link>
+          </div>
         </div>
       </div>
     </div>

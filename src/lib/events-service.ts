@@ -56,69 +56,33 @@ export class EventsService {
     };
   }
 
-  // Get all events with pagination and timeout handling
-  static async getEvents(limit: number = 100, offset: number = 0): Promise<EventLite[]> {
-    console.log('Attempting to fetch events from Supabase...');
-    console.log('Supabase client:', !!supabase);
-    
+  // Get events with pagination and limits to prevent timeouts
+  static async getEvents(limit: number = 20, offset: number = 0): Promise<EventLite[]> {
     try {
-      // Add timeout and pagination to prevent long-running queries
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .order('starts_at', { ascending: true })
-        .range(offset, offset + limit - 1)
-        .limit(limit);
-
-      console.log('Fetch events response:', { 
-        data: data ? `${data.length} events` : 'null', 
-        error: error ? { message: error.message, code: error.code, details: error.details } : 'null',
-        hasData: !!data,
-        dataType: typeof data
-      });
+        .range(offset, offset + limit - 1);
 
       if (error) {
-        console.error('Supabase error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw new Error(`Failed to fetch events: ${error.message}`);
+        console.error('Error fetching events:', error);
+        throw new Error('Failed to fetch events');
       }
 
       if (!data) {
-        console.log('No data returned from events query');
         return [];
       }
 
-      console.log(`Successfully fetched ${data.length} events`);
-      
-      // Debug: Check the first event's image data
-      if (data.length > 0 && data[0].image_url) {
-        const firstEvent = data[0];
-        console.log('First event image_url length:', firstEvent.image_url?.length);
-        console.log('First event image_url preview:', firstEvent.image_url?.substring(0, 100));
-        console.log('First event image_url ends with:', firstEvent.image_url?.substring((firstEvent.image_url?.length || 0) - 100));
-        console.log('First event image_url type:', typeof firstEvent.image_url);
-        console.log('Is base64?', firstEvent.image_url?.startsWith('data:image/'));
-        console.log('Is blob URL?', firstEvent.image_url?.startsWith('blob:'));
-      }
-      
+      console.log(`Successfully fetched ${data.length} events (limit: ${limit}, offset: ${offset})`);
       return data.map(this.mapRowToEvent);
     } catch (err) {
       console.error('Exception during events fetch:', err);
-      console.error('Error type:', typeof err);
-      console.error('Error constructor:', err?.constructor?.name);
-      if (err instanceof Error) {
-        console.error('Error message:', err.message);
-        console.error('Error stack:', err.stack);
-      }
       throw err;
     }
   }
 
-  // Get total count of events (faster than counting all records)
+  // Get total count of events for pagination
   static async getEventsCount(): Promise<number> {
     try {
       const { count, error } = await supabase
@@ -126,13 +90,13 @@ export class EventsService {
         .select('*', { count: 'exact', head: true });
 
       if (error) {
-        console.error('Error getting events count:', error);
+        console.error('Error counting events:', error);
         return 0;
       }
 
       return count || 0;
     } catch (err) {
-      console.error('Exception getting events count:', err);
+      console.error('Exception during events count:', err);
       return 0;
     }
   }
@@ -140,9 +104,6 @@ export class EventsService {
   // Get events with search and filtering
   static async getEventsWithFilters(filters: {
     searchQuery?: string;
-    category?: string;
-    dateRange?: string;
-    location?: string;
     sortBy?: string;
   }): Promise<EventLite[]> {
     console.log('Fetching events with filters:', filters);
@@ -158,65 +119,6 @@ export class EventsService {
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
       }
 
-      // Apply category filter (if you have categories in your events table)
-      if (filters.category) {
-        // Note: You'll need to add a category field to your events table
-        // For now, we'll skip this filter
-        console.log('Category filtering not yet implemented - add category field to events table');
-      }
-
-      // Apply location filter
-      if (filters.location) {
-        query = query.ilike('location', `%${filters.location}%`);
-      }
-
-      // Apply date range filter
-      if (filters.dateRange) {
-        const now = new Date();
-        let startDate: Date;
-        let endDate: Date;
-
-        switch (filters.dateRange) {
-          case 'Today':
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            break;
-          case 'Tomorrow':
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2);
-            break;
-          case 'This Week':
-            const dayOfWeek = now.getDay();
-            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysToMonday);
-            endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-            break;
-          case 'This Weekend':
-            const daysToSaturday = (6 - now.getDay() + 7) % 7;
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToSaturday);
-            endDate = new Date(startDate.getTime() + 2 * 24 * 60 * 60 * 1000);
-            break;
-          case 'Next Week':
-            const nextWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
-            const dayOfWeekNext = nextWeekStart.getDay();
-            const daysToMondayNext = dayOfWeekNext === 0 ? 6 : dayOfWeekNext - 1;
-            startDate = new Date(nextWeekStart.getFullYear(), nextWeekStart.getMonth(), nextWeekStart.getDate() - daysToMondayNext);
-            endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-            break;
-          case 'Next Month':
-            startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-            endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0);
-            break;
-          default:
-            startDate = now;
-            endDate = new Date(now.getFullYear() + 1, 11, 31); // End of next year
-        }
-
-        query = query
-          .gte('starts_at', startDate.toISOString())
-          .lte('starts_at', endDate.toISOString());
-      }
-
       // Apply sorting
       switch (filters.sortBy) {
         case 'date-desc':
@@ -227,11 +129,6 @@ export class EventsService {
           break;
         case 'location':
           query = query.order('location', { ascending: true });
-          break;
-        case 'popularity':
-          // Note: You'll need to add an RSVP count field or calculate it
-          // For now, we'll sort by date
-          query = query.order('starts_at', { ascending: true });
           break;
         default: // 'date' - earliest first
           query = query.order('starts_at', { ascending: true });
@@ -448,6 +345,7 @@ export class EventsService {
     }
   }
 
+  // Get all RSVPs for a specific event
   static async getEventRSVPs(eventId: string): Promise<Array<{
     id: string;
     event_id: string;
@@ -473,6 +371,7 @@ export class EventsService {
     return data || [];
   }
 
+  // Get RSVP status for a specific user and event
   static async getUserRSVPStatus(eventId: string, userId: string): Promise<{
     id: string;
     event_id: string;
@@ -487,12 +386,16 @@ export class EventsService {
       .eq('user_id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No RSVP found
+        return null;
+      }
       console.error('Error fetching user RSVP status:', error);
       throw new Error('Failed to fetch user RSVP status');
     }
 
-    return data || null;
+    return data;
   }
 
   // Comments functionality

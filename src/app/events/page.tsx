@@ -64,7 +64,7 @@ export default function EventsPage() {
 
   const handleFiltersChange = async (filters: SearchFilters) => {
     // Prevent unnecessary API calls if no meaningful filters are applied
-    const hasActiveFilters = filters.searchQuery || filters.category || filters.dateRange || filters.location || filters.sortBy !== 'date';
+    const hasActiveFilters = filters.searchQuery || filters.sortBy !== 'date';
     
     if (!hasActiveFilters) {
       // No filters, show all events immediately

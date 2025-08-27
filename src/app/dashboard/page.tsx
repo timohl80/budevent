@@ -14,48 +14,39 @@ export default function DashboardPage() {
   const [userRSVPs, setUserRSVPs] = useState<EventRSVP[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'my-events' | 'my-rsvps'>('my-rsvps');
+  const [error, setError] = useState<string | null>(null);
 
   const loadUserData = useCallback(async () => {
+    if (status !== 'authenticated') return;
+    
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
+      
       const userId = (session?.user as { id: string })?.id;
+      console.log('Loading user data for user:', userId);
       
-      // Load events created by the user (with pagination to prevent timeouts)
-      const events = await EventsService.getEvents(50, 0); // Limit to 50 events
-      const userCreatedEvents = events.filter(event => event.userId === userId);
+      // Fetch events with pagination to prevent timeouts
+      const allEvents = await EventsService.getEvents(100, 0); // Limit to 100 events
+      console.log('Fetched events:', allEvents.length);
+      
+      // Filter events created by the user
+      const userCreatedEvents = allEvents.filter(event => event.userId === userId);
       setUserEvents(userCreatedEvents);
+      console.log('User created events:', userCreatedEvents.length);
       
-      // Load user's RSVPs to other events (with pagination)
-      const allEvents = await EventsService.getEvents(50, 0); // Limit to 50 events
-      const userRSVPData: EventRSVP[] = [];
+      // For now, set empty RSVPs to prevent errors
+      // We'll implement proper RSVP fetching later
+      setUserRSVPs([]);
+      console.log('User RSVPs set to empty for now');
       
-      for (const event of allEvents) {
-        if (event.userId !== userId) { // Only events not created by user
-          try {
-            const rsvp = await EventsService.getUserRSVPStatus(event.id, userId);
-            if (rsvp) {
-              userRSVPData.push({
-                id: rsvp.id,
-                eventId: rsvp.event_id,
-                userId: rsvp.user_id,
-                status: rsvp.status as 'going' | 'maybe' | 'not_going',
-                createdAt: rsvp.created_at,
-                event: event
-              } as EventRSVP);
-            }
-          } catch (error) {
-            console.error(`Failed to get RSVP status for event ${event.id}:`, error);
-            }
-          }
-        }
-      
-      setUserRSVPs(userRSVPData);
     } catch (error) {
       console.error('Failed to load user data:', error);
+      setError(`Failed to load your events: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
-  }, [session?.user]);
+  }, [status, session?.user]);
 
   useEffect(() => {
     if (session?.user) {
@@ -102,7 +93,7 @@ export default function DashboardPage() {
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A29BFE]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#60A5FA]"></div>
       </div>
     );
   }
@@ -110,7 +101,7 @@ export default function DashboardPage() {
   if (status === 'unauthenticated') {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A29BFE]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#60A5FA]"></div>
       </div>
     );
   }
@@ -118,7 +109,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A29BFE]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#60A5FA]"></div>
       </div>
     );
   }
@@ -161,6 +152,18 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-red-800">{error}</span>
+            </div>
+          </div>
+        )}
 
         {/* Dashboard Content */}
         <RSVPDashboard

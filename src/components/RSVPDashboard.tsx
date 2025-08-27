@@ -34,7 +34,7 @@ export default function RSVPDashboard({
           </p>
           <a
             href="/events"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#A29BFE] hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE]"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#60A5FA] hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA]"
           >
             Browse Events
           </a>
@@ -127,7 +127,7 @@ export default function RSVPDashboard({
           </p>
           <a
             href="/events/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#A29BFE] hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE]"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#60A5FA] hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA]"
           >
             Create Event
           </a>
@@ -150,6 +150,15 @@ export default function RSVPDashboard({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">My Events</h2>
+        <button
+          onClick={() => setActiveTab('my-rsvps')}
+          className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#60A5FA] hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA]`}
+        >
+          My RSVPs ({userRSVPs.length})
+        </button>
+      </div>
       {activeTab === 'my-rsvps' ? renderRSVPsTab() : renderMyEventsTab()}
     </div>
   );

@@ -4,79 +4,43 @@ import { useState, useEffect, useCallback } from 'react';
 
 export interface SearchFilters {
   searchQuery: string;
-  category: string;
-  dateRange: string;
-  location: string;
   sortBy: string;
 }
 
 interface SearchAndFilterProps {
   onFiltersChange: (filters: SearchFilters) => void;
-  categories?: string[];
   isSearching?: boolean;
 }
 
-export default function SearchAndFilter({ onFiltersChange, categories = [], isSearching = false }: SearchAndFilterProps) {
+export default function SearchAndFilter({ onFiltersChange, isSearching = false }: SearchAndFilterProps) {
   const [filters, setFilters] = useState<SearchFilters>({
     searchQuery: '',
-    category: '',
-    dateRange: '',
-    location: '',
     sortBy: 'date'
   });
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Default categories if none provided
-  const defaultCategories = [
-    'All Events',
-    'Music',
-    'Sports',
-    'Food & Drink',
-    'Technology',
-    'Art & Culture',
-    'Business',
-    'Education',
-    'Health & Wellness',
-    'Entertainment'
-  ];
-
-  const dateRanges = [
-    'All Dates',
-    'Today',
-    'Tomorrow',
-    'This Week',
-    'This Weekend',
-    'Next Week',
-    'Next Month'
-  ];
-
   const sortOptions = [
     { value: 'date', label: 'Date (Earliest First)' },
     { value: 'date-desc', label: 'Date (Latest First)' },
-    { value: 'popularity', label: 'Most Popular' },
     { value: 'title', label: 'Title A-Z' },
     { value: 'location', label: 'Location' }
   ];
 
-  const usedCategories = categories.length > 0 ? categories : defaultCategories;
-
   useEffect(() => {
-    // Only trigger filters change for non-search filters (category, date, location, sort)
+    // Only trigger filters change for non-search filters (sort)
     // Search is handled separately with debouncing
-    const hasNonSearchFilters = filters.category || filters.dateRange || filters.location || filters.sortBy !== 'date';
-    
-    if (hasNonSearchFilters) {
+    if (filters.sortBy !== 'date') {
       onFiltersChange(filters);
     }
-  }, [filters.category, filters.dateRange, filters.location, filters.sortBy, onFiltersChange]);
+  }, [filters.sortBy, onFiltersChange]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     
-    // If clearing a filter and no other active filters, show all events immediately
-    if (!value && !newFilters.searchQuery && !newFilters.category && !newFilters.dateRange && !newFilters.location && newFilters.sortBy === 'date') {
+    // If clearing sort and no search query, show all events immediately
+    if (key === 'sortBy' && value === 'date' && !newFilters.searchQuery) {
       onFiltersChange(newFilters);
     }
   };
@@ -112,9 +76,6 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
   const clearFilters = () => {
     const clearedFilters = {
       searchQuery: '',
-      category: '',
-      dateRange: '',
-      location: '',
       sortBy: 'date'
     };
     
@@ -124,7 +85,7 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
     onFiltersChange(clearedFilters);
   };
 
-  const hasActiveFilters = filters.searchQuery || filters.category || filters.dateRange || filters.location || filters.sortBy !== 'date';
+  const hasActiveFilters = filters.searchQuery || filters.sortBy !== 'date';
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
@@ -139,15 +100,15 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
             placeholder="Search events by title, description, or location..."
             value={filters.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-colors"
           />
         </div>
         
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#A29BFE] transition-colors"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#60A5FA] transition-colors"
         >
-          {isExpanded ? 'Hide Filters' : 'Show Filters'}
+          {isExpanded ? 'Hide Options' : 'Show Options'}
         </button>
         
         {hasActiveFilters && (
@@ -160,60 +121,16 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
         )}
       </div>
 
-      {/* Expanded Filters */}
+      {/* Expanded Options */}
       {isExpanded && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
-          {/* Category Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
-            >
-              <option value="">All Categories</option>
-              {usedCategories.map((category) => (
-                <option key={category} value={category === 'All Events' ? '' : category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Date Range Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <select
-              value={filters.dateRange}
-              onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
-            >
-              <option value="">All Dates</option>
-              {dateRanges.slice(1).map((range) => (
-                <option key={range} value={range}>{range}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Location Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <input
-              type="text"
-              placeholder="Enter city or location..."
-              value={filters.location}
-              onChange={(e) => handleFilterChange('location', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
-            />
-          </div>
-
+        <div className="pt-4 border-t border-gray-100">
           {/* Sort Options */}
-          <div>
+          <div className="max-w-xs">
             <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-colors"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -238,34 +155,12 @@ export default function SearchAndFilter({ onFiltersChange, categories = [], isSe
               </button>
             </span>
           )}
-          {filters.category && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Category: {filters.category}
-              <button
-                onClick={() => handleFilterChange('category', '')}
-                className="ml-1 text-green-600 hover:text-green-800"
-              >
-                ×
-              </button>
-            </span>
-          )}
-          {filters.dateRange && (
+          {filters.sortBy !== 'date' && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-              Date: {filters.dateRange}
+              Sort: {sortOptions.find(opt => opt.value === filters.sortBy)?.label}
               <button
-                onClick={() => handleFilterChange('dateRange', '')}
+                onClick={() => handleFilterChange('sortBy', 'date')}
                 className="ml-1 text-purple-600 hover:text-purple-800"
-              >
-                ×
-              </button>
-            </span>
-          )}
-          {filters.location && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-              Location: {filters.location}
-              <button
-                onClick={() => handleFilterChange('location', '')}
-                className="ml-1 text-orange-600 hover:text-orange-800"
               >
                 ×
               </button>

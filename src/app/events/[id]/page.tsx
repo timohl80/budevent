@@ -162,10 +162,17 @@ export default function EventDetailPage() {
     }).format(date);
   };
 
-  const getRSVPButtonColor = () => {
-    if (rsvpStatus === 'going') return 'bg-green-600 hover:bg-green-700 focus:ring-green-500';
-    if (rsvpStatus === 'maybe') return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500';
-    return 'bg-[#A29BFE] hover:bg-[#8B7FD8] focus:ring-[#A29BFE]';
+  const getRSVPButtonColor = (status: string) => {
+    switch (status) {
+      case 'going':
+        return 'bg-[#60A5FA] hover:bg-[#4B89E8] focus:ring-[#60A5FA]';
+      case 'maybe':
+        return 'bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-500';
+      case 'not_going':
+        return 'bg-red-500 hover:bg-red-600 focus:ring-red-500';
+      default:
+        return 'bg-[#60A5FA] hover:bg-[#4B89E8] focus:ring-[#60A5FA]';
+    }
   };
 
   const getRSVPButtonText = () => {
@@ -194,7 +201,7 @@ export default function EventDetailPage() {
           <p className="text-gray-600 mb-6">The event you're looking for doesn't exist.</p>
           <Link
             href="/events"
-            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors"
+            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
           >
             Browse All Events
           </Link>
@@ -212,7 +219,7 @@ export default function EventDetailPage() {
         <div className="mb-6">
           <Link
             href="/events"
-            className="inline-flex items-center text-[#A29BFE] hover:text-[#8B7FD8] transition-colors"
+            className="inline-flex items-center text-[#60A5FA] hover:text-[#4B89E8] transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -224,15 +231,36 @@ export default function EventDetailPage() {
         {/* Event Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
           {/* Event Image */}
-          {event.imageUrl && (
-            <div className="aspect-video bg-gray-200 overflow-hidden">
+          <div className="relative w-full h-64 md:h-80 bg-gray-100 rounded-lg overflow-hidden mb-6">
+            {event.imageUrl ? (
               <img
                 src={event.imageUrl}
                 alt={event.title}
                 className="w-full h-full object-cover"
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#60A5FA] to-[#3B82F6]">
+                <img
+                  src="/BudEvent-pin.svg"
+                  alt="BudEvent"
+                  className="w-44 h-44 opacity-80"
+                />
+              </div>
+            )}
+            
+            {/* Event Status Badge */}
+            <div className="absolute top-4 right-4">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                event.status === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : event.status === 'cancelled' 
+                  ? 'bg-red-100 text-red-800' 
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                {event.status === 'active' ? 'Active' : event.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+              </span>
             </div>
-          )}
+          </div>
 
           {/* Event Content */}
           <div className="p-6">
@@ -349,7 +377,7 @@ export default function EventDetailPage() {
                   <p className="text-gray-600 mb-4">Sign in to RSVP to this event</p>
                   <Link
                     href="/login"
-                    className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors"
+                    className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
                   >
                     Sign In
                   </Link>
@@ -362,7 +390,7 @@ export default function EventDetailPage() {
               <div className="border-t border-gray-100 pt-6">
                 <Link
                   href={`/events/${event.id}/edit`}
-                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#6B46C1] bg-[#A29BFE] bg-opacity-15 border border-[#A29BFE] border-opacity-30 rounded-lg hover:bg-opacity-25 hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-all"
+                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#4B89E8] bg-[#60A5FA] bg-opacity-15 border border-[#60A5FA] border-opacity-30 rounded-lg hover:bg-opacity-25 hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-all"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -381,14 +409,14 @@ export default function EventDetailPage() {
             <div className="space-y-3">
               {isLoadingRsvps ? (
                 <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#A29BFE] mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#60A5FA] mx-auto"></div>
                   <p className="mt-2 text-sm text-gray-600">Loading RSVPs...</p>
                 </div>
               ) : (
                 rsvps.map((rsvp) => (
                   <div key={rsvp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-[#A29BFE] rounded-full flex items-center justify-center text-white font-medium text-sm">
+                      <div className="w-8 h-8 bg-[#60A5FA] rounded-full flex items-center justify-center text-white font-medium text-sm">
                         {(rsvp.users?.name || rsvp.users?.email || 'U').charAt(0).toUpperCase()}
                       </div>
                       <div>
