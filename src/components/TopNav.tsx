@@ -111,18 +111,6 @@ export default function TopNav() {
               Admin
             </Link>
           )}
-          <Link 
-            href="/test-database" 
-            className="text-[#9CA3AF] hover:text-[#DB2777] transition-colors text-sm"
-          >
-            Test DB
-          </Link>
-          <Link 
-            href="/test-calendar" 
-            className="text-[#9CA3AF] hover:text-[#DB2777] transition-colors text-sm"
-          >
-            Test Calendar
-          </Link>
           {session ? (
             <div className="flex items-center space-x-4">
               <span className="text-[#F3F4F6] text-sm">
@@ -227,18 +215,6 @@ export default function TopNav() {
                 Admin
               </Link>
             )}
-            <Link
-              href="/test-database"
-              className="block px-3 py-2 text-[#9CA3AF] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors text-sm"
-            >
-              Test DB
-            </Link>
-            <Link
-              href="/test-calendar"
-              className="block px-3 py-2 text-[#9CA3AF] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors text-sm"
-            >
-              Test Calendar
-            </Link>
             {session ? (
               <div className="space-y-2">
                 <div className="px-3 py-2 text-sm text-[#9CA3AF] border-b border-[#374151]">
