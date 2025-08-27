@@ -17,9 +17,13 @@ export default function EventCard({ event }: EventCardProps) {
   const [rsvpStatus, setRsvpStatus] = useState<'going' | 'maybe' | 'not_going' | null>(null);
   
   useEffect(() => {
-    // Use the base64 directly instead of converting to blob URL
-    setImageSrc(event.imageUrl || '');
-  }, [event.imageUrl]);
+    // Set image source if available
+    if (event.imageUrl) {
+      setImageSrc(event.imageUrl);
+    } else {
+      setImageSrc('');
+    }
+  }, [event.imageUrl, event.id]);
   
   // Check if user has already RSVP'd
   useEffect(() => {
@@ -87,27 +91,38 @@ export default function EventCard({ event }: EventCardProps) {
 
   return (
     <article className="bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] flex flex-col w-full overflow-hidden">
-      {/* Event Image */}
-      <div className="relative h-48 bg-gray-100 rounded-t-lg overflow-hidden">
-        {event.imageUrl && imageSrc ? (
+      {/* Event Image - Clickable */}
+      <Link 
+        href={`/events/${event.id}`} 
+        className="block relative h-48 bg-gray-100 rounded-t-lg overflow-hidden group cursor-pointer"
+        title={`Click to view details for ${event.title}`}
+      >
+                {event.imageUrl && imageSrc && imageSrc.length > 100 && imageSrc.startsWith('data:image/') ? (
           <img
             src={imageSrc}
             alt={event.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+            onError={(e) => {
+              console.error('Image failed to load:', imageSrc);
+              setImageSrc('');
+            }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#60A5FA] to-[#3B82F6]">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#60A5FA] to-[#3B82F6] transition-transform duration-200 group-hover:scale-105">
             <img
               src="/BudEvent-pin.svg"
               alt="BudEvent"
               className="w-40 h-40 opacity-80"
             />
+
           </div>
         )}
         
+
+        
         {/* RSVP Status Badge */}
         {rsvpStatus && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-3 z-10">
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
               rsvpStatus === 'going' 
                 ? 'bg-green-100 text-green-800' 
@@ -121,7 +136,7 @@ export default function EventCard({ event }: EventCardProps) {
         )}
         
         {/* Event Status Badge */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-10">
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
             event.status === 'active' 
               ? 'bg-green-100 text-green-800' 
@@ -132,7 +147,9 @@ export default function EventCard({ event }: EventCardProps) {
             {event.status === 'active' ? 'Active' : event.status === 'cancelled' ? 'Cancelled' : 'Completed'}
           </span>
         </div>
-      </div>
+        
+
+      </Link>
       
       {/* Event Content */}
       <div className="p-4 flex-grow flex flex-col">
