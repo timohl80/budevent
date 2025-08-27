@@ -8,19 +8,9 @@ import { supabase } from './supabase'
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 10) + '...');
 console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    // Google Provider (only if credentials are available)
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
-      (() => {
-        console.log('=== GOOGLE PROVIDER INITIALIZED ===');
-        console.log('✅ Google OAuth is available');
-        return GoogleProvider({
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        });
-      })()
-    ] : []),
+// Create providers array dynamically
+function createProviders() {
+  const providers: any[] = [
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -75,7 +65,28 @@ export const authOptions: NextAuthOptions = {
         }
       }
     })
-  ],
+  ]
+
+  // Only add Google provider if credentials are available
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    console.log('=== GOOGLE PROVIDER INITIALIZED ===')
+    console.log('✅ Google OAuth is available')
+    providers.unshift(GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }))
+  } else {
+    console.log('=== GOOGLE PROVIDER NOT AVAILABLE ===')
+    console.log('❌ GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING')
+    console.log('❌ GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING')
+    console.log('ℹ️ Google Sign-In will not be available')
+  }
+
+  return providers
+}
+
+export const authOptions: NextAuthOptions = {
+  providers: createProviders(),
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 1 day (more secure)
