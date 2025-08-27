@@ -4,6 +4,10 @@ import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
 
+// Add this temporarily to your auth config to debug
+console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID?.substring(0, 10) + '...');
+console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
