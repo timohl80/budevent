@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function WelcomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const oauthError = searchParams.get('error');
+  const callbackUrl = searchParams.get('callbackUrl');
+  
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,6 +31,15 @@ export default function WelcomePage() {
       router.push('/');
     }
   }, [status, session, router]);
+
+  // Log OAuth errors for debugging
+  useEffect(() => {
+    if (oauthError) {
+      console.error('OAuth Error:', oauthError);
+      console.error('Callback URL:', callbackUrl);
+      console.error('Full search params:', Object.fromEntries(searchParams.entries()));
+    }
+  }, [oauthError, callbackUrl, searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -135,6 +148,42 @@ export default function WelcomePage() {
     return (
       <div className="min-h-screen bg-[#111827] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
+      </div>
+    );
+  }
+
+  // Show OAuth error if present
+  if (oauthError) {
+    return (
+      <div className="min-h-screen bg-[#111827] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div>
+            <h1 className="text-3xl font-bold text-red-500 mb-4">Authentication Error</h1>
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 mb-6">
+              <p className="text-red-300 text-lg font-medium mb-2">OAuth Error: {oauthError}</p>
+              {callbackUrl && (
+                <p className="text-red-400 text-sm mb-4">Callback URL: {callbackUrl}</p>
+              )}
+              <p className="text-red-400 text-sm">
+                This error occurred during Google Sign-In. Check the browser console for more details.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <button
+                onClick={() => window.location.href = '/welcome'}
+                className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors"
+              >
+                Try Again
+              </button>
+              <Link
+                href="/welcome"
+                className="w-full inline-block py-3 px-4 text-[#9CA3AF] hover:text-white transition-colors"
+              >
+                Back to Welcome Page
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
