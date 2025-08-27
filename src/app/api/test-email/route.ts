@@ -3,6 +3,9 @@ import { EmailService } from '@/lib/email-service';
 
 export async function POST() {
   try {
+    // Debug: Show what email address is being used
+    console.log('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL);
+    
     // Test email data
     const testEmailData = {
       eventName: 'Test Event',

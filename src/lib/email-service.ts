@@ -111,7 +111,7 @@ export class EmailService {
       const calendarLinks = generateCalendarLinks(event);
 
       const { data: result, error } = await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
         to: [data.userEmail],
         subject: `You're signed up for ${data.eventName}! 🎉`,
         html: this.generateRSVPEmailHTML(data, calendarLinks),
@@ -166,7 +166,7 @@ export class EmailService {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           }
           .header {
-            background: linear-gradient(135deg, #A29BFE 0%, #8B7FD8 100%);
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
             color: white;
             padding: 40px 30px;
             text-align: center;
@@ -189,7 +189,7 @@ export class EmailService {
             border-radius: 8px;
             padding: 25px;
             margin: 25px 0;
-            border-left: 4px solid #A29BFE;
+            border-left: 4px solid #60A5FA;
           }
           .event-details h2 {
             margin: 0 0 20px 0;
@@ -244,11 +244,10 @@ export class EmailService {
             border: 1px solid #e9ecef;
           }
           .calendar-section h3 {
-            margin: 0 0 20px 0;
-            color: #2D3436;
+            color: #60A5FA;
+            margin: 0 0 15px 0;
             font-size: 18px;
             font-weight: 600;
-            text-align: center;
           }
           .calendar-buttons {
             display: flex;
@@ -279,9 +278,16 @@ export class EmailService {
             color: #6c757d;
             font-size: 14px;
           }
+          .footer p {
+            margin: 0;
+            color: #60A5FA;
+            font-size: 14px;
+            font-weight: 500;
+          }
           .footer a {
-            color: #A29BFE;
+            color: #60A5FA;
             text-decoration: none;
+            font-weight: 500;
           }
           @media (max-width: 600px) {
             .container {
