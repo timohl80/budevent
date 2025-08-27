@@ -118,18 +118,18 @@ export default function EditEventPage() {
 
   if (error || !event) {
     return (
-      <main className="space-y-6 py-6">
-        <div className="text-center py-12">
-          <div className="text-red-500">
-            <svg className="mx-auto h-12 w-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <p className="text-lg font-medium text-red-600 mb-2">Error</p>
-            <p className="text-red-500">{error || 'Event not found'}</p>
           </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error</h2>
+          <p className="text-red-600 mb-4">{error || 'Event not found'}</p>
           <Link
             href="/events"
-            className="inline-flex items-center px-6 py-3 mt-4 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors"
+            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
           >
             Back to Events
           </Link>
@@ -185,27 +185,31 @@ export default function EditEventPage() {
   };
 
   return (
-    <main className="space-y-6 py-6">
-      <section className="space-y-4">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/events"
-            className="inline-flex items-center text-[#A29BFE] hover:text-[#8B7FD8] transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to events
-          </Link>
-        </div>
-        
-        <h1 className="text-3xl font-bold text-[#2D3436]">
-          Edit Event
-        </h1>
-        <p className="text-[#2D3436] opacity-80">
-          Update your event details and settings.
-        </p>
-      </section>
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header Section */}
+        <section className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Link
+              href="/events"
+              className="inline-flex items-center text-[#60A5FA] hover:text-[#4B89E8] transition-colors font-medium"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Events
+            </Link>
+          </div>
+          
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Edit Event
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Update your event details and make changes as needed.
+            </p>
+          </div>
+        </section>
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -222,23 +226,31 @@ export default function EditEventPage() {
         </div>
       )}
 
-      <section>
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-          <div className="space-y-2">
-            <label htmlFor="title" className="block text-sm font-medium text-[#2D3436]">
-              Event Title *
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              required
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
-              placeholder="Enter event title"
-            />
+        {/* Form Section */}
+        <section className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] px-8 py-6">
+            <h2 className="text-xl font-semibold text-white">Event Details</h2>
+            <p className="text-blue-100 mt-1">Update the information below to modify your event</p>
           </div>
+          
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Event Title */}
+              <div className="space-y-3">
+                <label htmlFor="title" className="block text-sm font-semibold text-gray-700">
+                  Event Title *
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  required
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                  placeholder="Enter a catchy event title..."
+                />
+              </div>
 
           <div className="space-y-2">
             <label htmlFor="description" className="block text-sm font-medium text-[#2D3436]">
@@ -362,23 +374,33 @@ export default function EditEventPage() {
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <Link
-              href="/events"
-              className="px-6 py-3 text-base font-medium text-[#2D3436] bg-gray-200 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+              {/* Action Buttons */}
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <Link
+                  href="/events"
+                  className="px-8 py-3 text-base font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 flex-1 text-center"
+                >
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-[#60A5FA] to-[#3B82F6] rounded-xl hover:from-[#4B89E8] hover:to-[#2563EB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  {saving ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Saving Changes...
+                    </div>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }
