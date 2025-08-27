@@ -61,9 +61,13 @@ export default function TopNav() {
         {/* Logo */}
         <Link 
           href="/" 
-          className="text-xl font-bold text-[#3B82F6] hover:text-[#60A5FA] transition-colors"
+          className="flex items-center hover:opacity-80 transition-opacity"
         >
-          BudEvent
+          <img 
+            src="/BudEvent-pin.svg" 
+            alt="BudEvent Logo" 
+            className="h-14 w-auto"
+          />
         </Link>
 
         {/* Desktop Navigation */}
