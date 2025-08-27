@@ -193,11 +193,26 @@ export default function WelcomePage() {
             </div>
           )}
 
-          {/* Google Sign-In Button */}
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => signIn('google', { callbackUrl: '/' })}
+                  {/* Google Sign-In Button */}
+        <div className="mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              console.log('=== GOOGLE SIGN-IN DEBUG ===');
+              console.log('Google Sign-In button clicked');
+              console.log('Attempting to sign in with Google...');
+              console.log('Current URL:', window.location.href);
+              console.log('Callback URL:', '/');
+              
+              // Try to sign in and catch any errors
+              try {
+                signIn('google', { callbackUrl: '/' });
+              } catch (error) {
+                console.error('Error starting Google Sign-In:', error);
+              }
+              
+              console.log('=== END DEBUG ===');
+            }}
               className="w-full py-3 px-4 bg-white text-gray-800 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-all flex items-center justify-center space-x-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
