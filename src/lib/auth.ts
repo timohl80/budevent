@@ -10,24 +10,17 @@ console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    (() => {
-      console.log('=== GOOGLE PROVIDER SETUP ===');
-      console.log('GOOGLE_CLIENT_ID available:', !!process.env.GOOGLE_CLIENT_ID);
-      console.log('GOOGLE_CLIENT_SECRET available:', !!process.env.GOOGLE_CLIENT_SECRET);
-      
-      if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-        console.error('❌ GOOGLE PROVIDER: Missing credentials!');
-        console.error('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
-        console.error('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'MISSING');
-        throw new Error('Google OAuth credentials are missing!');
-      }
-      
-      console.log('✅ GOOGLE PROVIDER: Creating provider with credentials');
-      return GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      });
-    })(),
+    // Google Provider (only if credentials are available)
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+      (() => {
+        console.log('=== GOOGLE PROVIDER INITIALIZED ===');
+        console.log('✅ Google OAuth is available');
+        return GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        });
+      })()
+    ] : []),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
