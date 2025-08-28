@@ -33,7 +33,7 @@ export async function GET() {
 
     const { data: users, error } = await supabase
       .from('users')
-      .select('id, email, name, created_at, is_approved, provider')
+      .select('id, email, name, created_at, is_approved, approval_notes')
       .eq('is_approved', false)
       .order('created_at', { ascending: false });
 

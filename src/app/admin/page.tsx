@@ -9,9 +9,8 @@ interface PendingUser {
   id: string;
   name: string | null;
   email: string;
-  createdAt: string;
-  approvalNotes?: string;
-  provider?: string; // Added provider to the interface
+  created_at: string;
+  approval_notes?: string;
 }
 
 interface ApprovedUser {
@@ -19,9 +18,9 @@ interface ApprovedUser {
   name: string | null;
   email: string;
   isApproved: boolean;
-  approvedAt: string | null;
+  approved_at: string | null;
   role: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export default function AdminDashboard() {
@@ -107,7 +106,7 @@ export default function AdminDashboard() {
           setApprovedUsers(prev => [...prev, {
             ...userToApprove,
             isApproved: true,
-            approvedAt: new Date().toISOString(),
+            approved_at: new Date().toISOString(),
             role: 'USER'
           }]);
         }
@@ -204,6 +203,22 @@ export default function AdminDashboard() {
           <p className="text-lg text-[#2D3436] opacity-80 max-w-2xl mx-auto">
             Manage user registrations and platform access
           </p>
+          
+          {/* Admin Tools */}
+          <div className="mt-6 flex justify-center space-x-4">
+            <a
+              href="/admin/fix-events"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-100 rounded-lg hover:bg-yellow-200"
+            >
+              Fix Events with No Owner
+            </a>
+            <a
+              href="/test-database"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200"
+            >
+              Test Database
+            </a>
+          </div>
         </div>
 
         {/* Stats */}
@@ -245,7 +260,6 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -260,28 +274,11 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{user.email}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {user.provider ? (
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              user.provider === 'google' 
-                                ? 'bg-blue-100 text-blue-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {user.provider === 'google' ? 'Google' : user.provider}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              Email
-                            </span>
-                          )}
-                        </div>
-                      </td>
+                                              <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button
@@ -352,7 +349,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
-                          {user.approvedAt ? new Date(user.approvedAt).toLocaleDateString() : 'N/A'}
+                          {user.approved_at ? new Date(user.approved_at).toLocaleDateString() : 'N/A'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

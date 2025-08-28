@@ -31,14 +31,39 @@ export default function DashboardPage() {
       console.log('Fetched events:', allEvents.length);
       
       // Filter events created by the user
-      const userCreatedEvents = allEvents.filter(event => event.userId === userId);
+      const userCreatedEvents = allEvents.filter(event => {
+        // Filter out events with no userId assigned
+        if (!event.userId) {
+          console.warn('Found event with no userId:', event);
+          return false;
+        }
+        return event.userId === userId;
+      });
       setUserEvents(userCreatedEvents);
       console.log('User created events:', userCreatedEvents.length);
       
-      // For now, set empty RSVPs to prevent errors
-      // We'll implement proper RSVP fetching later
-      setUserRSVPs([]);
-      console.log('User RSVPs set to empty for now');
+      // Log RSVP counts for debugging
+      userCreatedEvents.forEach(event => {
+        console.log(`Event "${event.title}" - RSVPs: ${event.rsvpCount}, Comments: ${event.commentCount}`);
+        console.log(`Event "${event.title}" - Image URL: ${event.imageUrl || 'NO IMAGE'}`);
+        console.log(`Event "${event.title}" - Image URL type: ${typeof event.imageUrl}`);
+        console.log(`Event "${event.title}" - Image URL length: ${event.imageUrl?.length || 0}`);
+        if (event.imageUrl) {
+          console.log(`Event "${event.title}" - Image URL starts with: ${event.imageUrl.substring(0, 20)}...`);
+          console.log(`Event "${event.title}" - Image URL is valid URL: ${event.imageUrl.startsWith('http')}`);
+        }
+        console.log(`Event "${event.title}" - Full event data:`, event);
+      });
+      
+      // Fetch user's RSVPs
+      try {
+        const userRSVPs = await EventsService.getUserRSVPs(userId);
+        setUserRSVPs(userRSVPs);
+        console.log('User RSVPs fetched:', userRSVPs.length);
+      } catch (error) {
+        console.error('Failed to fetch user RSVPs:', error);
+        setUserRSVPs([]);
+      }
       
     } catch (error) {
       console.error('Failed to load user data:', error);
@@ -125,6 +150,24 @@ export default function DashboardPage() {
           <p className="text-lg text-[#2D3436] opacity-80 max-w-2xl mx-auto">
             Manage your events and RSVPs in one place
           </p>
+          
+          {/* Debug Links - Only show in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 flex justify-center space-x-4">
+              <a
+                href="/test-database"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200"
+              >
+                Test Database
+              </a>
+              <a
+                href="/test-connection"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200"
+              >
+                Test Connection
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}

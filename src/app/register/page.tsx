@@ -11,7 +11,9 @@ import Link from 'next/link';
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -30,6 +32,7 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
@@ -39,24 +42,39 @@ export default function RegisterPage() {
     setError(null);
     setSuccess(null);
 
+    console.log('Form data being submitted:', data);
+    console.log('Password length:', data.password.length);
+    console.log('Password meets requirements:', /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.password));
+
     try {
+      const requestBody = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      };
+      
+      console.log('Request body:', requestBody);
+      console.log('Submitting to:', '/api/auth/register');
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       const result = await response.json();
+      console.log('Response body:', result);
 
       if (!response.ok) {
+        console.error('Registration failed:', result);
         setError(result.error || 'Registration failed');
       } else {
+        console.log('Registration successful:', result);
         if (result.requiresApproval) {
           setSuccess('Registration successful! Your account is pending admin approval. You will receive an email when your account is approved.');
           // Don't redirect immediately - let user read the message
@@ -71,6 +89,7 @@ export default function RegisterPage() {
         }
       }
     } catch (error) {
+      console.error('Exception during registration:', error);
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -173,6 +192,70 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
                 placeholder="Create a password"
               />
+              
+              {/* Password Requirements */}
+              <div className="mt-2 space-y-1">
+                <p className="text-xs font-medium text-gray-700 mb-2">Password must contain:</p>
+                <div className="space-y-1">
+                  <div className="flex items-center text-xs">
+                    <span className={`w-4 h-4 mr-2 rounded-full flex items-center justify-center ${
+                      (watch('password')?.length || 0) >= 8 
+                        ? 'bg-green-100 text-green-600' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {watch('password') && (watch('password')?.length || 0) >= 8 ? '✓' : '○'}
+                    </span>
+                    <span className={watch('password') && (watch('password')?.length || 0) >= 8 ? 'text-green-600' : 'text-gray-500'}>
+                      At least 8 characters
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-xs">
+                    <span className={`w-4 h-4 mr-2 rounded-full flex items-center justify-center ${
+                      watch('password') && /[A-Z]/.test(watch('password') || '')
+                        ? 'bg-green-100 text-green-600' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {watch('password') && /[A-Z]/.test(watch('password') || '') ? '✓' : '○'}
+                    </span>
+                    <span className={watch('password') && /[A-Z]/.test(watch('password') || '') ? 'text-green-600' : 'text-gray-500'}>
+                      One uppercase letter (A-Z)
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-xs">
+                    <span className={`w-4 h-4 mr-2 rounded-full flex items-center justify-center ${
+                      watch('password') && /[a-z]/.test(watch('password') || '')
+                        ? 'bg-green-100 text-green-600' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {watch('password') && /[a-z]/.test(watch('password') || '') ? '✓' : '○'}
+                    </span>
+                    <span className={watch('password') && /[a-z]/.test(watch('password') || '') ? 'text-green-600' : 'text-gray-500'}>
+                      One lowercase letter (a-z)
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-xs">
+                    <span className={`w-4 h-4 mr-2 rounded-full flex items-center justify-center ${
+                      watch('password') && /\d/.test(watch('password') || '')
+                        ? 'bg-green-100 text-green-600' 
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {watch('password') && /\d/.test(watch('password') || '') ? '✓' : '○'}
+                    </span>
+                    <span className={watch('password') && /\d/.test(watch('password') || '') ? 'text-green-600' : 'text-gray-500'}>
+                      One number (0-9)
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Example Password */}
+                <div className="mt-3 pt-2 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">💡 Example: <span className="font-mono text-gray-700">Password123</span></p>
+                  <p className="text-xs text-gray-400">This meets all requirements: 11 chars, uppercase P, lowercase assword, numbers 123</p>
+                </div>
+              </div>
               {errors.password && (
                 <p className="mt-1 text-red-600 text-sm">{errors.password.message}</p>
               )}
@@ -189,6 +272,9 @@ export default function RegisterPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-colors"
                 placeholder="Confirm your password"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Type the same password again to confirm
+              </p>
               {errors.confirmPassword && (
                 <p className="mt-1 text-red-600 text-sm">{errors.confirmPassword.message}</p>
               )}

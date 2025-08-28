@@ -59,15 +59,32 @@ export default function RSVPDashboard({
               Going ({goingRSVPs.length})
             </h2>
             <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {goingRSVPs.map((rsvp) => (
-                <RSVPEventCard
-                  key={rsvp.id}
-                  event={{ id: rsvp.eventId } as EventLite}
-                  rsvp={rsvp}
-                  onUpdate={onRSVPUpdate}
-                  onCancel={onRSVPCancel}
-                />
-              ))}
+              {goingRSVPs.map((rsvp) => {
+                // If we have event data, use it; otherwise create a minimal event object
+                const eventData = rsvp.event || {
+                  id: rsvp.eventId,
+                  title: 'Event Details Loading...',
+                  startsAt: new Date().toISOString(),
+                  location: '',
+                  description: '',
+                  isPublic: true,
+                  status: 'active' as const,
+                  userId: '',
+                  rsvpCount: 0,
+                  commentCount: 0,
+                  externalLink: undefined
+                };
+                
+                return (
+                  <RSVPEventCard
+                    key={rsvp.id}
+                    event={eventData}
+                    rsvp={rsvp}
+                    onUpdate={onRSVPUpdate}
+                    onCancel={onRSVPCancel}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -80,15 +97,32 @@ export default function RSVPDashboard({
               Maybe ({maybeRSVPs.length})
             </h2>
             <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {maybeRSVPs.map((rsvp) => (
-                <RSVPEventCard
-                  key={rsvp.id}
-                  event={{ id: rsvp.eventId } as EventLite}
-                  rsvp={rsvp}
-                  onUpdate={onRSVPUpdate}
-                  onCancel={onRSVPCancel}
-                />
-              ))}
+              {maybeRSVPs.map((rsvp) => {
+                // If we have event data, use it; otherwise create a minimal event object
+                const eventData = rsvp.event || {
+                  id: rsvp.eventId,
+                  title: 'Event Details Loading...',
+                  startsAt: new Date().toISOString(),
+                  location: '',
+                  description: '',
+                  isPublic: true,
+                  status: 'active' as const,
+                  userId: '',
+                  rsvpCount: 0,
+                  commentCount: 0,
+                  externalLink: undefined
+                };
+                
+                return (
+                  <RSVPEventCard
+                    key={rsvp.id}
+                    event={eventData}
+                    rsvp={rsvp}
+                    onUpdate={onRSVPUpdate}
+                    onCancel={onRSVPCancel}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -101,15 +135,32 @@ export default function RSVPDashboard({
               Not Going ({notGoingRSVPs.length})
             </h2>
             <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {notGoingRSVPs.map((rsvp) => (
-                <RSVPEventCard
-                  key={rsvp.id}
-                  event={{ id: rsvp.eventId } as EventLite}
-                  rsvp={rsvp}
-                  onUpdate={onRSVPUpdate}
-                  onCancel={onRSVPCancel}
-                />
-              ))}
+              {notGoingRSVPs.map((rsvp) => {
+                // If we have event data, use it; otherwise create a minimal event object
+                const eventData = rsvp.event || {
+                  id: rsvp.eventId,
+                  title: 'Event Details Loading...',
+                  startsAt: new Date().toISOString(),
+                  location: '',
+                  description: '',
+                  isPublic: true,
+                  status: 'active' as const,
+                  userId: '',
+                  rsvpCount: 0,
+                  commentCount: 0,
+                  externalLink: undefined
+                };
+                
+                return (
+                  <RSVPEventCard
+                    key={rsvp.id}
+                    event={eventData}
+                    rsvp={rsvp}
+                    onUpdate={onRSVPUpdate}
+                    onCancel={onRSVPCancel}
+                  />
+                );
+              })}
             </div>
           </div>
         )}

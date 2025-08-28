@@ -41,6 +41,7 @@ export interface EventRSVP {
     name: string;
     email: string;
   };
+  event?: EventLite; // Optional event data when fetched with joins
 }
 
 export interface EventComment {

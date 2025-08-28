@@ -57,15 +57,21 @@ export async function POST(request: NextRequest) {
         password_hash: passwordHash,
         is_approved: false, // New users start as pending approval
         role: 'USER',
-        provider: 'email', // Add provider information
+
       })
       .select('id, name, email, created_at')
       .single()
 
     if (createError) {
       console.error('Error creating user:', createError)
+      console.error('Error details:', {
+        code: createError.code,
+        message: createError.message,
+        details: createError.details,
+        hint: createError.hint
+      })
       return NextResponse.json(
-        { error: 'Failed to create user' },
+        { error: `Failed to create user: ${createError.message}` },
         { status: 500 }
       )
     }

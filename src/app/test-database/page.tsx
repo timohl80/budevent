@@ -4,97 +4,101 @@ import { useState } from 'react';
 import { EventsService } from '@/lib/events-service';
 
 export default function TestDatabasePage() {
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
-  const testDatabase = async () => {
+  const runTests = async () => {
     setLoading(true);
+    const results: any = {};
+
     try {
-      console.log('Testing database connection...');
-      
       // Test 1: Basic connection
+      console.log('Testing basic connection...');
       const connectionTest = await EventsService.testConnection();
+      results.connection = connectionTest;
       console.log('Connection test result:', connectionTest);
-      
+
       // Test 2: Get events count
+      console.log('Testing events count...');
       const eventsCount = await EventsService.getEventsCount();
+      results.eventsCount = eventsCount;
       console.log('Events count:', eventsCount);
-      
-      // Test 3: Try to get events (with small limit)
+
+      // Test 3: Get first few events
+      console.log('Testing events fetch...');
       const events = await EventsService.getEvents(5, 0);
-      console.log('Events fetched:', events.length);
-      console.log('First event:', events[0]);
-      
-      setTestResults({
-        connectionTest,
-        eventsCount,
-        eventsFetched: events.length,
-        firstEvent: events[0],
-        timestamp: new Date().toISOString()
-      });
-      
+      results.events = events;
+      results.eventsLength = events.length;
+      console.log('First 5 events:', events);
+
+      // Test 4: Check event structure
+      if (events.length > 0) {
+        const firstEvent = events[0];
+        results.firstEventStructure = {
+          id: firstEvent.id,
+          title: firstEvent.title,
+          userId: firstEvent.userId,
+          hasUserId: !!firstEvent.userId,
+          allFields: Object.keys(firstEvent)
+        };
+        console.log('First event structure:', results.firstEventStructure);
+      }
+
+      // Test 5: Try to get a specific event by ID
+      if (events.length > 0) {
+        console.log('Testing getEventById...');
+        const firstEventId = events[0].id;
+        const singleEvent = await EventsService.getEventById(firstEventId);
+        results.getEventById = {
+          success: !!singleEvent,
+          eventId: firstEventId,
+          result: singleEvent
+        };
+        console.log('getEventById result:', results.getEventById);
+      }
+
     } catch (error) {
-      console.error('Database test failed:', error);
-      setTestResults({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    } finally {
-      setLoading(false);
+      console.error('Test error:', error);
+      results.error = error instanceof Error ? error.message : 'Unknown error';
     }
+
+    setTestResults(results);
+    setLoading(false);
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-[#2D3436] mb-4">
-            Database Test Page
-          </h1>
-          <p className="text-lg text-[#2D3436] opacity-80">
-            Test your database connection and see what's happening with events
-          </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Database Test Page</h1>
+        
+        <div className="mb-6">
+          <button
+            onClick={runTests}
+            disabled={loading}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Running Tests...' : 'Run Database Tests'}
+          </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <button
-            onClick={testDatabase}
-            disabled={loading}
-            className="w-full px-6 py-3 text-base font-medium text-white bg-[#A29BFE] rounded-lg hover:bg-[#8B7FD8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        {Object.keys(testResults).length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Test Results</h2>
+            <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
+              {JSON.stringify(testResults, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <a
+            href="/dashboard"
+            className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
           >
-            {loading ? 'Testing...' : 'Test Database Connection'}
-          </button>
-
-          {testResults && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Results:</h3>
-              <pre className="text-sm text-gray-700 bg-white p-3 rounded border overflow-x-auto">
-                {JSON.stringify(testResults, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">What This Tests:</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Database connection to Supabase</li>
-              <li>• Total number of events in database</li>
-              <li>• Ability to fetch events</li>
-              <li>• Any error messages or timeouts</li>
-            </ul>
-          </div>
-
-          <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-yellow-900 mb-2">Common Issues:</h3>
-            <ul className="text-sm text-yellow-800 space-y-1">
-              <li>• No events in database (create some first!)</li>
-              <li>• Database timeout (run the optimization script)</li>
-              <li>• Missing environment variables</li>
-              <li>• Database permissions issues</li>
-            </ul>
-          </div>
+            Back to Dashboard
+          </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

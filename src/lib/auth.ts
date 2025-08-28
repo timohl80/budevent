@@ -86,30 +86,12 @@ export const authOptions: NextAuthOptions = {
           console.log('Searching for user with email:', user.email)
           const { data: existingUser, error } = await supabase
             .from('users')
-            .select('id, email, is_approved, provider')
+            .select('id, email, is_approved')
             .eq('email', user.email)
             .single()
 
           if (existingUser) {
             console.log('Existing user found:', existingUser)
-            
-            // If user exists but was created via email, update them to have Google provider
-            if (existingUser.provider === 'email') {
-              console.log('Updating email user to include Google provider')
-              const { error: updateError } = await supabase
-                .from('users')
-                .update({ 
-                  provider: 'google',
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', existingUser.id)
-              
-              if (updateError) {
-                console.error('Error updating user provider:', updateError)
-                return false
-              }
-              console.log('User provider updated to Google')
-            }
             
             // Check if approved
             if (!existingUser.is_approved) {
@@ -139,7 +121,6 @@ export const authOptions: NextAuthOptions = {
               name: user.name,
               is_approved: false, // Changed from true to false
               role: 'USER',
-              provider: 'google', // Add provider information
             }
             
             // Only add optional fields if they exist
@@ -178,12 +159,10 @@ export const authOptions: NextAuthOptions = {
           // The user object from Google sign-in should have the database ID
           // since we're creating/updating the user in our database
           token.id = user.id
-          token.provider = account.provider
           console.log('JWT token set with database user ID:', token.id);
         } else {
           // For email users, use the user ID as normal
           token.id = user.id
-          token.provider = account?.provider
         }
       }
       return token
@@ -191,7 +170,6 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
-        (session.user as any).provider = token.provider as string
       }
       return session
     }

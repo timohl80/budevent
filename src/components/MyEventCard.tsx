@@ -2,6 +2,7 @@ import { EventLite } from '@/lib/types';
 import { useState } from 'react';
 import Link from 'next/link';
 import ShareButton from './ShareButton';
+import { EventsService } from '@/lib/events-service';
 
 interface MyEventCardProps {
   event: EventLite;
@@ -48,12 +49,21 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
 
     setIsLoading(true);
     try {
-      // TODO: Implement delete event functionality
-      // await EventsService.deleteEvent(event.id);
+      console.log('Starting delete process for event:', event.id, event.title);
+      
+      // Actually delete the event
+      await EventsService.deleteEvent(event.id);
+      console.log('Event deleted successfully:', event.id);
+      
+      // Show success message
+      alert('Event deleted successfully!');
+      
+      // Refresh the events list
       onRefresh();
     } catch (error) {
       console.error('Failed to delete event:', error);
-      alert('Failed to delete event. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to delete event: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +71,9 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
 
   const isEventPast = new Date(event.startsAt) < new Date();
   const isEventToday = new Date(event.startsAt).toDateString() === new Date().toDateString();
+
+  // Debug logging for image URL
+  console.log(`MyEventCard render - Event: ${event.title}, Image URL: ${event.imageUrl || 'undefined'}`);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -75,7 +88,7 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
             <img
               src={event.imageUrl}
               alt={event.title}
-              className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+              className="w-full h-full object-cover"
             />
             {isEventPast && (
               <div className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 rounded-md text-xs font-medium z-10">
@@ -87,22 +100,9 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
                 Today!
               </div>
             )}
-            
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-white bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white bg-opacity-90 rounded-lg px-3 py-1.5 shadow-lg border border-gray-200">
-                <div className="flex items-center space-x-1.5">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-                  <span className="text-xs font-medium text-gray-600">View</span>
-                </div>
-              </div>
-            </div>
           </div>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] flex items-center justify-center">
             <span className="text-white text-lg font-bold tracking-wide opacity-90 text-center px-4 leading-tight">
               {event.title}
             </span>
@@ -117,15 +117,24 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 mr-3">
             {event.title}
           </h3>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
-            event.status === 'active' 
-              ? 'bg-green-100 text-green-800 border-green-300' 
-              : event.status === 'cancelled' 
-              ? 'bg-red-100 text-red-800 border-red-300' 
-              : 'bg-gray-100 text-gray-800 border-gray-300'
-          }`}>
-            {event.status === 'active' ? '🟢 Active' : event.status === 'cancelled' ? '🔴 Cancelled' : '⚫ Completed'}
-          </span>
+          <div className="flex flex-col items-end space-y-2">
+            {/* Owner Warning */}
+            {!event.userId && (
+              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
+                ⚠️ No Owner
+              </div>
+            )}
+            {/* Event Status */}
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
+              event.status === 'active' 
+                ? 'bg-green-100 text-green-800 border-green-300' 
+                : event.status === 'cancelled' 
+                ? 'bg-red-100 text-red-800 border-red-300' 
+                : 'bg-gray-100 text-gray-800 border-gray-300'
+            }`}>
+              {event.status === 'active' ? '🟢 Active' : event.status === 'cancelled' ? '🔴 Cancelled' : '⚫ Completed'}
+            </span>
+          </div>
         </div>
         
         {/* Date & Time */}
@@ -215,6 +224,17 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
           >
             Edit Event
           </Link>
+          
+          {/* Debug Button - Only show in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <Link
+              href={`/debug-event/${event.id}`}
+              className="py-2 px-3 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors"
+            >
+              Debug
+            </Link>
+          )}
+          
           <button
             onClick={handleDeleteEvent}
             disabled={isLoading}

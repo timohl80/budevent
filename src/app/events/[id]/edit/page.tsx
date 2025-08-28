@@ -41,15 +41,28 @@ export default function EditEventPage() {
     async function fetchEvent() {
       try {
         setLoading(true);
-        const events = await EventsService.getEvents();
-        const currentEvent = events.find(e => e.id === eventId);
+        console.log('Fetching event with ID:', eventId);
+        console.log('Session user:', session?.user);
+        
+        // Use the more efficient getEventById method
+        const currentEvent = await EventsService.getEventById(eventId);
+        
+        console.log('Fetched event:', currentEvent);
         
         if (!currentEvent) {
-          setError('Event not found');
+          setError(`Event not found. Event ID: ${eventId}`);
           return;
         }
 
         // Check if user owns this event
+        console.log('Event user ID:', currentEvent.userId);
+        console.log('Session user ID:', (session?.user as any)?.id);
+        
+        if (!currentEvent.userId) {
+          setError('This event has no owner assigned. Please contact an administrator to fix this issue.');
+          return;
+        }
+        
         if (currentEvent.userId !== (session?.user as any)?.id) {
           setError('You can only edit your own events');
           return;
@@ -74,7 +87,7 @@ export default function EditEventPage() {
         setUploadedImageUrl(currentEvent.imageUrl || '');
       } catch (err) {
         console.error('Error fetching event:', err);
-        setError('Failed to load event');
+        setError(`Failed to load event: ${err instanceof Error ? err.message : 'Unknown error'}`);
       } finally {
         setLoading(false);
       }

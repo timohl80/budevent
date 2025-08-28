@@ -26,6 +26,15 @@ export class EventsService {
 
   // Convert database row to EventLite
   private static mapRowToEvent(row: EventRow): EventLite {
+    // Check if user_id is null and log a warning
+    if (!row.user_id) {
+      console.warn('Event has no user_id assigned:', {
+        eventId: row.id,
+        title: row.title,
+        user_id: row.user_id
+      });
+    }
+    
     return {
       id: row.id,
       title: row.title,
@@ -38,7 +47,7 @@ export class EventsService {
       status: row.status as 'active' | 'cancelled' | 'completed',
       rsvpCount: 0, // Will be computed separately
       commentCount: 0, // Will be computed separately
-      userId: row.user_id,
+      userId: row.user_id || '', // Convert null to empty string to prevent issues
       externalLink: row.external_link || undefined,
     };
   }
@@ -77,7 +86,22 @@ export class EventsService {
       }
 
       console.log(`Successfully fetched ${data.length} events (limit: ${limit}, offset: ${offset})`);
-      return data.map(this.mapRowToEvent);
+      
+      // Get RSVP counts for all events
+      const eventsWithCounts = await Promise.all(
+        data.map(async (event) => {
+          const rsvpCount = await this.getEventRSVPCount(event.id);
+          const commentCount = await this.getEventCommentCount(event.id);
+          
+          return {
+            ...this.mapRowToEvent(event),
+            rsvpCount,
+            commentCount,
+          };
+        })
+      );
+      
+      return eventsWithCounts;
     } catch (err) {
       console.error('Exception during events fetch:', err);
       throw err;
@@ -99,6 +123,84 @@ export class EventsService {
       return count || 0;
     } catch (err) {
       console.error('Exception during events count:', err);
+      return 0;
+    }
+  }
+
+  // Get RSVP count for a specific event
+  static async getEventRSVPCount(eventId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('event_rsvps')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', eventId);
+
+      if (error) {
+        console.error('Error counting RSVPs:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (err) {
+      console.error('Exception during RSVP count:', err);
+      return 0;
+    }
+  }
+
+  // Get RSVP counts by status for a specific event
+  static async getEventRSVPCountsByStatus(eventId: string): Promise<{
+    going: number;
+    maybe: number;
+    not_going: number;
+    total: number;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select('status')
+        .eq('event_id', eventId);
+
+      if (error) {
+        console.error('Error counting RSVPs by status:', error);
+        return { going: 0, maybe: 0, not_going: 0, total: 0 };
+      }
+
+      const counts = {
+        going: 0,
+        maybe: 0,
+        not_going: 0,
+        total: 0
+      };
+
+      data?.forEach(rsvp => {
+        counts[rsvp.status as keyof typeof counts]++;
+        counts.total++;
+      });
+
+      return counts;
+    } catch (err) {
+      console.error('Exception during RSVP status count:', err);
+      return { going: 0, maybe: 0, not_going: 0, total: 0 };
+    }
+  }
+
+  // Get comment count for a specific event
+  static async getEventCommentCount(eventId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('event_comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', eventId)
+        .is('parent_id', null); // Only count top-level comments
+
+      if (error) {
+        console.error('Error counting comments:', error);
+        return 0;
+      }
+      
+      return count || 0;
+    } catch (err) {
+      console.error('Exception during comment count:', err);
       return 0;
     }
   }
@@ -148,7 +250,22 @@ export class EventsService {
       }
 
       console.log(`Successfully fetched ${data.length} filtered events`);
-      return data.map(this.mapRowToEvent);
+      
+      // Get RSVP counts for all events
+      const eventsWithCounts = await Promise.all(
+        data.map(async (event) => {
+          const rsvpCount = await this.getEventRSVPCount(event.id);
+          const commentCount = await this.getEventCommentCount(event.id);
+          
+          return {
+            ...this.mapRowToEvent(event),
+            rsvpCount,
+            commentCount,
+          };
+        })
+      );
+      
+      return eventsWithCounts;
     } catch (err) {
       console.error('Exception during filtered events fetch:', err);
       throw err;
@@ -288,14 +405,78 @@ export class EventsService {
 
   // Delete an event
   static async deleteEvent(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id);
+    console.log('Attempting to delete event:', id);
+    
+    try {
+      // First, verify the event exists
+      const { data: existingEvent, error: fetchError } = await supabase
+        .from('events')
+        .select('id, title')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      console.error('Error deleting event:', error);
-      throw new Error('Failed to delete event');
+      if (fetchError) {
+        console.error('Error fetching event for deletion:', fetchError);
+        throw new Error(`Event not found: ${fetchError.message}`);
+      }
+
+      if (!existingEvent) {
+        throw new Error('Event not found');
+      }
+
+      console.log('Found event to delete:', existingEvent.title);
+
+      // Delete the event
+      const { error: deleteError } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) {
+        console.error('Error deleting event:', deleteError);
+        console.error('Delete error details:', {
+          code: deleteError.code,
+          message: deleteError.message,
+          details: deleteError.details,
+          hint: deleteError.hint
+        });
+        
+        // Provide more specific error messages based on error codes
+        if (deleteError.code === '42501') {
+          throw new Error('Permission denied - check RLS policies or user authentication');
+        } else if (deleteError.code === '23503') {
+          throw new Error('Cannot delete event - it has associated RSVPs or comments');
+        } else if (deleteError.code === '42P01') {
+          throw new Error('Table does not exist - check database setup');
+        }
+        
+        throw new Error(`Failed to delete event: ${deleteError.message || 'Unknown error'}`);
+      }
+
+      console.log('Event deleted successfully:', id);
+      
+      // Verify deletion by trying to fetch the event again
+      const { data: verifyEvent, error: verifyError } = await supabase
+        .from('events')
+        .select('id')
+        .eq('id', id)
+        .single();
+
+      if (verifyEvent) {
+        console.warn('Event still exists after deletion attempt:', id);
+        throw new Error('Event deletion failed - event still exists');
+      }
+
+      if (verifyError && verifyError.code === 'PGRST116') {
+        // PGRST116 means no rows returned, which is expected after deletion
+        console.log('Event deletion verified successfully');
+      } else if (verifyError) {
+        console.warn('Unexpected error during deletion verification:', verifyError);
+      }
+
+    } catch (err) {
+      console.error('Exception during event deletion:', err);
+      throw err;
     }
   }
 
@@ -485,5 +666,131 @@ export class EventsService {
     }
 
     return data || [];
+  }
+
+  // Get a single event by ID
+  static async getEventById(id: string): Promise<EventLite | null> {
+    try {
+      console.log('getEventById called with ID:', id);
+      console.log('Supabase client available:', !!supabase);
+      
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      console.log('Supabase response:', { data, error });
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No event found
+          console.log('No event found with ID:', id);
+          return null;
+        }
+        console.error('Error fetching event by ID:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw new Error('Failed to fetch event');
+      }
+
+      if (!data) {
+        console.log('No data returned from Supabase');
+        return null;
+      }
+
+      console.log('Raw event data from database:', data);
+      
+      // Get RSVP and comment counts
+      const rsvpCount = await this.getEventRSVPCount(data.id);
+      const commentCount = await this.getEventCommentCount(data.id);
+      
+      const mappedEvent = {
+        ...this.mapRowToEvent(data),
+        rsvpCount,
+        commentCount,
+      };
+      
+      console.log('Mapped event with counts:', mappedEvent);
+      
+      return mappedEvent;
+    } catch (err) {
+      console.error('Exception during event fetch by ID:', err);
+      throw err;
+    }
+  }
+
+  // Get all RSVPs for a specific user
+  static async getUserRSVPs(userId: string): Promise<Array<{
+    id: string;
+    eventId: string;
+    userId: string;
+    status: 'going' | 'maybe' | 'not_going';
+    createdAt: string;
+    event?: EventLite;
+  }>> {
+    try {
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select(`
+          *,
+          event:event_id(
+            id,
+            title,
+            description,
+            starts_at,
+            location,
+            image_url,
+            capacity,
+            is_public,
+            status,
+            user_id,
+            external_link
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching user RSVPs:', error);
+        throw new Error('Failed to fetch user RSVPs');
+      }
+
+      console.log('Raw RSVP data from database:', data);
+
+      // Transform the data to match EventRSVP interface
+      const transformedRSVPs = (data || []).map(rsvp => ({
+        id: rsvp.id,
+        eventId: rsvp.event_id,
+        userId: rsvp.user_id,
+        status: rsvp.status as 'going' | 'maybe' | 'not_going',
+        createdAt: rsvp.created_at,
+        event: rsvp.event ? {
+          id: rsvp.event.id,
+          title: rsvp.event.title,
+          description: rsvp.event.description,
+          startsAt: rsvp.event.starts_at,
+          location: rsvp.event.location,
+          imageUrl: rsvp.event.image_url,
+          capacity: rsvp.event.capacity,
+          isPublic: rsvp.event.is_public,
+          status: rsvp.event.status as 'active' | 'cancelled' | 'completed',
+          rsvpCount: 0,
+          commentCount: 0,
+          userId: rsvp.event.user_id || '',
+          externalLink: rsvp.event.external_link || undefined
+        } : undefined
+      }));
+
+      console.log('Transformed RSVPs:', transformedRSVPs);
+      return transformedRSVPs;
+    } catch (err) {
+      console.error('Exception during user RSVPs fetch:', err);
+      throw err;
+    }
   }
 }
