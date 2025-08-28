@@ -289,7 +289,7 @@ export default function EditEventPage() {
 
           <div className="space-y-2">
             <label htmlFor="startsAt" className="block text-sm font-medium text-[#2D3436]">
-              Start Date & Time *
+              Start Date & Time * (Swedish Time)
             </label>
             <input
               type="datetime-local"
@@ -300,6 +300,7 @@ export default function EditEventPage() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
             />
+            <p className="text-sm text-[#2D3436] opacity-70">All times are in Swedish time (CET/CEST)</p>
           </div>
 
           <div className="space-y-2">

@@ -217,7 +217,7 @@ function CreateEventForm() {
               {/* Date & Time */}
               <div className="space-y-3">
                 <label htmlFor="startsAt" className="block text-sm font-semibold text-gray-700">
-                  Start Date & Time *
+                  Start Date & Time * (Swedish Time)
                 </label>
                 <input
                   type="datetime-local"
@@ -228,6 +228,7 @@ function CreateEventForm() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
                 />
+                <p className="text-sm text-gray-500">All times are in Swedish time (CET/CEST)</p>
               </div>
 
               {/* Location */}

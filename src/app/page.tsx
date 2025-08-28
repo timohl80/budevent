@@ -29,11 +29,24 @@ export default function Home() {
   useEffect(() => {
     async function fetchRecentEvents() {
       try {
-        // Only fetch the 3 most recent events
+        // Fetch upcoming events and sort them properly
         const allEvents = await EventsService.getEvents();
-        const sortedEvents = allEvents
-          .sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime())
+        
+        // Filter for upcoming events (events that haven't started yet)
+        const now = new Date();
+        const upcomingEvents = allEvents.filter(event => {
+          const eventDate = new Date(event.startsAt);
+          return eventDate > now;
+        });
+        
+        // Sort by start date (earliest first) and take the first 3
+        const sortedEvents = upcomingEvents
+          .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
           .slice(0, 3);
+        
+        console.log('All events fetched:', allEvents.length);
+        console.log('Upcoming events:', upcomingEvents.length);
+        console.log('Events to display:', sortedEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
         
         setRecentEvents(sortedEvents);
       } catch (error) {

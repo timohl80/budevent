@@ -13,13 +13,13 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
 
   const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat('sv-SE', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-      hour: 'numeric',
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
+      hour12: false,
     }).format(date);
   };
 

@@ -151,14 +151,14 @@ export default function EventDetailPage() {
 
   const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat('sv-SE', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: 'numeric',
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
+      hour12: false,
     }).format(date);
   };
 
@@ -443,7 +443,7 @@ export default function EventDetailPage() {
                           {rsvp.users?.name || rsvp.users?.email || 'Unknown User'}
                         </p>
                         <p className="text-sm text-gray-500">
-                          RSVP'd {new Date(rsvp.createdAt).toLocaleDateString()}
+                          RSVP'd {new Date(rsvp.createdAt).toLocaleDateString('sv-SE')}
                         </p>
                       </div>
                     </div>
