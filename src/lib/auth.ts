@@ -86,18 +86,40 @@ export const authOptions: NextAuthOptions = {
           console.log('Searching for user with email:', user.email)
           const { data: existingUser, error } = await supabase
             .from('users')
-            .select('id, email, is_approved')
+            .select('id, email, is_approved, provider')
             .eq('email', user.email)
             .single()
 
           if (existingUser) {
             console.log('Existing user found:', existingUser)
-            // User exists, check if approved
+            
+            // If user exists but was created via email, update them to have Google provider
+            if (existingUser.provider === 'email') {
+              console.log('Updating email user to include Google provider')
+              const { error: updateError } = await supabase
+                .from('users')
+                .update({ 
+                  provider: 'google',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingUser.id)
+              
+              if (updateError) {
+                console.error('Error updating user provider:', updateError)
+                return false
+              }
+              console.log('User provider updated to Google')
+            }
+            
+            // Check if approved
             if (!existingUser.is_approved) {
               console.log('User not approved, throwing error')
               throw new Error('Account pending approval. Please wait for admin approval before logging in.')
             }
-            console.log('User approved, allowing sign-in')
+            
+            // Important: Update the user object to use our database ID
+            user.id = existingUser.id
+            console.log('User approved, allowing sign-in with database ID:', user.id)
             return true
           } else {
             // New Google user - require approval instead of auto-approving
@@ -150,8 +172,19 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id
-        token.provider = account?.provider
+        // For Google users, we need to ensure we're using the database user ID, not the Google ID
+        if (account?.provider === 'google') {
+          console.log('JWT callback for Google user:', { user, account });
+          // The user object from Google sign-in should have the database ID
+          // since we're creating/updating the user in our database
+          token.id = user.id
+          token.provider = account.provider
+          console.log('JWT token set with database user ID:', token.id);
+        } else {
+          // For email users, use the user ID as normal
+          token.id = user.id
+          token.provider = account?.provider
+        }
       }
       return token
     },

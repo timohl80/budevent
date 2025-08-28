@@ -301,6 +301,8 @@ export class EventsService {
 
   // RSVP functionality
   static async rsvpToEvent(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going'): Promise<void> {
+    console.log('rsvpToEvent called with:', { eventId, userId, status });
+    
     try {
       // First, check if RSVP already exists
       const { data: existingRSVP } = await supabase
@@ -311,6 +313,7 @@ export class EventsService {
         .single();
 
       if (existingRSVP) {
+        console.log('Updating existing RSVP:', existingRSVP.id);
         // Update existing RSVP
         const { error } = await supabase
           .from('event_rsvps')
@@ -325,7 +328,9 @@ export class EventsService {
           console.error('Error updating existing RSVP:', error);
           throw new Error('Failed to update RSVP');
         }
+        console.log('RSVP updated successfully');
       } else {
+        console.log('Creating new RSVP for user:', userId);
         // Create new RSVP
         const { error } = await supabase
           .from('event_rsvps')
@@ -341,6 +346,7 @@ export class EventsService {
           console.error('Error creating new RSVP:', error);
           throw new Error('Failed to create RSVP');
         }
+        console.log('New RSVP created successfully');
       }
     } catch (error) {
       console.error('RSVP operation failed:', error);
@@ -382,6 +388,8 @@ export class EventsService {
     status: string;
     created_at: string;
   } | null> {
+    console.log('getUserRSVPStatus called with:', { eventId, userId });
+    
     const { data, error } = await supabase
       .from('event_rsvps')
       .select('*')
@@ -392,12 +400,20 @@ export class EventsService {
     if (error) {
       if (error.code === 'PGRST116') {
         // No RSVP found
+        console.log('No RSVP found for user:', userId);
         return null;
       }
       console.error('Error fetching user RSVP status:', error);
-      throw new Error('Failed to fetch user RSVP status');
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      throw new Error(`Failed to fetch user RSVP status: ${error.message}`);
     }
 
+    console.log('RSVP status found:', data);
     return data;
   }
 

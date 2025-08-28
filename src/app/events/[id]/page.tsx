@@ -18,6 +18,7 @@ export default function EventDetailPage() {
   const [isRsvping, setIsRsvping] = useState(false);
   const [rsvps, setRsvps] = useState<any[]>([]);
   const [isLoadingRsvps, setIsLoadingRsvps] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const eventId = params.id as string;
 
@@ -30,23 +31,42 @@ export default function EventDetailPage() {
   const loadEvent = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous errors
+      console.log('Loading event with ID:', eventId);
+      console.log('Session user:', session?.user);
+      
       // For now, we'll get all events and find the specific one
       // Later you can create a getEventById method
+      console.log('Calling EventsService.getEvents...');
       const allEvents = await EventsService.getEvents(100, 0);
+      console.log('Events loaded successfully:', allEvents.length);
+      
       const foundEvent = allEvents.find(e => e.id === eventId);
+      console.log('Found event:', foundEvent ? 'YES' : 'NO');
       
       if (foundEvent) {
+        console.log('Setting event in state:', foundEvent.title);
         setEvent(foundEvent);
         if (session?.user) {
+          console.log('Checking user RSVP status...');
           checkUserRSVPStatus(foundEvent.id);
         }
+        console.log('Loading event RSVPs...');
         loadEventRSVPs(foundEvent.id);
       } else {
+        console.error('Event not found, redirecting to events page');
+        setError('Event not found');
         router.push('/events');
       }
     } catch (error) {
       console.error('Failed to load event:', error);
-      router.push('/events');
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      // Set error state instead of redirecting immediately
+      setError('Failed to load event. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -56,14 +76,38 @@ export default function EventDetailPage() {
     if (!session?.user) return;
     
     try {
-      const userRsvp = await EventsService.getUserRSVPStatus(eventId, (session.user as any).id);
+      console.log('Checking RSVP status for user:', {
+        userId: (session.user as any).id,
+        userEmail: (session.user as any).email,
+        provider: (session.user as any).provider
+      });
+      
+      let userRsvp = null;
+      try {
+        // First try with the user ID from session
+        userRsvp = await EventsService.getUserRSVPStatus(eventId, (session.user as any).id);
+      } catch (error) {
+        console.log('Failed to get RSVP with user ID, trying with email for Google users');
+        // For Google users, if the user ID fails, we might need to find the user by email
+        if ((session.user as any).provider === 'google' && (session.user as any).email) {
+          // This is a fallback - we'd need to implement getUserRSVPStatusByEmail
+          console.log('Google user ID lookup failed, would need email-based lookup');
+        }
+      }
+      
       if (userRsvp) {
         setRsvpStatus(userRsvp.status as 'going' | 'maybe' | 'not_going');
+        console.log('User RSVP status found:', userRsvp.status);
       } else {
         setRsvpStatus(null);
+        console.log('No existing RSVP found for user');
       }
     } catch (error) {
       console.error('Failed to check user RSVP status:', error);
+      // For Google users, this might be a user ID mismatch issue
+      if ((session.user as any).provider === 'google') {
+        console.log('Google user RSVP check failed - this might be a user ID issue');
+      }
       setRsvpStatus(null);
     }
   };
@@ -81,12 +125,44 @@ export default function EventDetailPage() {
   };
 
   const handleRSVP = async (status: 'going' | 'maybe' | 'not_going') => {
-    if (!session?.user || !event) return;
+    console.log('RSVP button clicked:', status);
+    console.log('Session user:', session?.user);
+    console.log('Event:', event);
+    
+    if (!session?.user) {
+      console.error('No session user');
+      return;
+    }
+    
+    if (!event) {
+      console.error('No event loaded');
+      return;
+    }
     
     setIsRsvping(true);
     try {
-      await EventsService.rsvpToEvent(event.id, (session.user as any).id, status);
-      setRsvpStatus(status);
+      console.log('Calling EventsService.rsvpToEvent with:', {
+        eventId: event.id,
+        userId: (session.user as any).id,
+        status: status
+      });
+      
+      // Try to RSVP with the current user ID
+      try {
+        await EventsService.rsvpToEvent(event.id, (session.user as any).id, status);
+        setRsvpStatus(status);
+        console.log('RSVP successful, status updated to:', status);
+      } catch (rsvpError) {
+        console.error('RSVP failed with user ID:', rsvpError);
+        
+        // For Google users, if the user ID fails, we might need to find the user by email
+        if ((session.user as any).provider === 'google' && (session.user as any).email) {
+          console.log('Google user RSVP failed, this might be a user ID mismatch issue');
+          throw new Error('Google user authentication issue. Please try logging out and back in.');
+        }
+        
+        throw rsvpError;
+      }
       
       // Send confirmation email if user is going or maybe
       if (status === 'going' || status === 'maybe') {
@@ -144,6 +220,7 @@ export default function EventDetailPage() {
       await loadEventRSVPs(event.id);
     } catch (error) {
       console.error('Failed to RSVP:', error);
+      alert('❌ Failed to RSVP. Please try again. Check console for details.');
     } finally {
       setIsRsvping(false);
     }
@@ -187,6 +264,36 @@ export default function EventDetailPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A29BFE] mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">Loading event...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Event</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                setError(null);
+                loadEvent();
+              }}
+              className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
+            >
+              Try Again
+            </button>
+            <br />
+            <Link
+              href="/events"
+              className="inline-flex items-center px-6 py-3 text-base font-medium text-[#7C3AED] bg-white border border-[#7C3AED] rounded-lg hover:bg-[#7C3AED] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
+            >
+              Back to Events
+            </Link>
+          </div>
         </div>
       </div>
     );
