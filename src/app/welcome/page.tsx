@@ -337,6 +337,17 @@ function WelcomeContent() {
                 className="w-full px-4 py-3 border border-[#374151] bg-[#111827] text-[#F3F4F6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-[#3B82F6] transition-colors placeholder-[#6B7280]"
                 placeholder={isLoginMode ? "Enter your password" : "Create a password"}
               />
+              {/* Forgot Password link (only in login mode) */}
+              {isLoginMode && (
+                <div className="mt-2 text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-[#60A5FA] hover:text-[#4B89E8] transition-colors"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Confirm Password field (only for registration) */}
