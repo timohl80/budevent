@@ -36,7 +36,14 @@ export default function ShareButton({ event, className = '' }: ShareButtonProps)
         await navigator.share(shareData);
         setShowShareMenu(false);
       } catch (error) {
-        console.error('Error sharing:', error);
+        // Handle AbortError (user cancelled) gracefully
+        if (error instanceof Error && error.name === 'AbortError') {
+          // User cancelled sharing - this is normal behavior
+          console.log('Share cancelled by user');
+        } else {
+          // Log other errors
+          console.error('Error sharing:', error);
+        }
       }
     } else {
       // Fallback to showing share menu
@@ -99,7 +106,7 @@ export default function ShareButton({ event, className = '' }: ShareButtonProps)
     <div className={`relative ${className}`}>
       <button
         onClick={handleShare}
-        className="inline-flex items-center px-3 py-2 text-sm font-medium text-[#A29BFE] bg-[#A29BFE]/10 rounded-md hover:bg-[#A29BFE]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#A29BFE] transition-colors"
+        className="inline-flex items-center px-3 py-2 text-sm font-medium text-[#60A5FA] bg-[#60A5FA]/10 rounded-md hover:bg-[#60A5FA]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
         aria-label="Share event"
       >
         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
