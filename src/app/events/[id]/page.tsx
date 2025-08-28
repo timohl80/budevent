@@ -213,7 +213,9 @@ export default function EventDetailPage() {
   const isOwner = (session?.user as any)?.id === event.userId;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#7C3AED]/5 to-[#F59E0B]/10 py-8">
+    <main className="min-h-screen bg-[#F3F4F6] py-8" style={{
+      background: 'linear-gradient(135deg, #F8F7FF 0%, #FEF3C7 50%, #F8F7FF 100%)'
+    }}>
       <div className="max-w-4xl mx-auto px-4">
         {/* Back Button */}
         <div className="mb-6">
@@ -229,7 +231,7 @@ export default function EventDetailPage() {
         </div>
 
         {/* Event Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-[#7C3AED]/20 overflow-hidden mb-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl border border-[#7C3AED]/30 overflow-hidden mb-6">
           {/* Event Image */}
           <div className="relative w-full h-64 md:h-80 bg-gray-100 rounded-lg overflow-hidden mb-6">
             {event.imageUrl ? (
@@ -402,7 +404,7 @@ export default function EventDetailPage() {
 
         {/* RSVP List */}
         {rsvps.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-[#7C3AED]/20 p-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl border border-[#7C3AED]/30 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Who's Going</h2>
             <div className="space-y-3">
               {isLoadingRsvps ? (
