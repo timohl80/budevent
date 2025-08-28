@@ -2,10 +2,12 @@
 
 /* Custom color variables */
 :root {
-  --primary-blue: #60A5FA;      /* Light blue - matches logo */
-  --primary-blue-dark: #3B82F6; /* Darker blue for hover states */
-  --primary-blue-light: #93C5FD; /* Lighter blue for backgrounds */
-  --accent-blue: #1E40AF;       /* Deep blue for accents */
-  --gradient-start: #60A5FA;    /* Start of blue gradient */
-  --gradient-end: #3B82F6;      /* End of blue gradient */
+  --primary-purple: #7C3AED;      /* Deep purple - main brand */
+  --primary-purple-dark: #6D28D9; /* Darker purple for hover states */
+  --primary-purple-light: #A78BFA; /* Lighter purple for backgrounds */
+  --accent-gold: #F59E0B;         /* Warm gold for accents */
+  --accent-gold-dark: #D97706;    /* Darker gold for hover */
+  --accent-pink: #EC4899;         /* Hot pink for special elements */
+  --gradient-start: #7C3AED;      /* Start of purple gradient */
+  --gradient-end: #6D28D9;        /* End of purple gradient */
 }

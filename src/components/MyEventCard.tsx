@@ -102,31 +102,10 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
             </div>
           </div>
         ) : (
-          <div className="h-48 bg-gradient-to-br from-[#60A5FA] to-[#3B82F6] flex items-center justify-center relative group">
-            <img
-              src="/BudEvent-pin.svg"
-              alt="BudEvent"
-              className="w-40 h-40 opacity-80 transition-transform duration-200 group-hover:scale-105"
-            />
-            {isEventPast && (
-              <div className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 rounded-md text-xs font-medium z-10">
-                Past Event
-              </div>
-            )}
-            {isEventToday && !isEventPast && (
-              <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-md text-xs font-medium z-10">
-                Today!
-              </div>
-            )}
-            
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white bg-opacity-90 rounded-full p-3">
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-            </div>
+          <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
+            <span className="text-white text-lg font-bold tracking-wide opacity-90 text-center px-4 leading-tight">
+              {event.title}
+            </span>
           </div>
         )}
       </Link>

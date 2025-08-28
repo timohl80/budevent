@@ -201,7 +201,7 @@ export default function EventDetailPage() {
           <p className="text-gray-600 mb-6">The event you're looking for doesn't exist.</p>
           <Link
             href="/events"
-            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
+            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
           >
             Browse All Events
           </Link>
@@ -213,13 +213,13 @@ export default function EventDetailPage() {
   const isOwner = (session?.user as any)?.id === event.userId;
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-[#7C3AED]/5 to-[#F59E0B]/10 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back Button */}
         <div className="mb-6">
           <Link
             href="/events"
-            className="inline-flex items-center text-[#60A5FA] hover:text-[#4B89E8] transition-colors"
+            className="inline-flex items-center text-[#7C3AED] hover:text-[#6D28D9] transition-colors"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -229,7 +229,7 @@ export default function EventDetailPage() {
         </div>
 
         {/* Event Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-[#7C3AED]/20 overflow-hidden mb-6">
           {/* Event Image */}
           <div className="relative w-full h-64 md:h-80 bg-gray-100 rounded-lg overflow-hidden mb-6">
             {event.imageUrl ? (
@@ -239,12 +239,10 @@ export default function EventDetailPage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#60A5FA] to-[#3B82F6]">
-                <img
-                  src="/BudEvent-pin.svg"
-                  alt="BudEvent"
-                  className="w-44 h-44 opacity-80"
-                />
+              <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
+                <span className="text-white text-xl font-bold tracking-wide opacity-90 text-center px-4 leading-tight">
+                  {event.title}
+                </span>
               </div>
             )}
             
@@ -321,7 +319,7 @@ export default function EventDetailPage() {
             </div>
 
             {/* RSVP Section */}
-            <div className="border-t border-gray-100 pt-6">
+            <div className="border-t border-[#7C3AED]/20 pt-6">
               {session ? (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">RSVP to Event</h3>
@@ -333,8 +331,8 @@ export default function EventDetailPage() {
                       disabled={isRsvping}
                       className={`px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                         rsvpStatus === 'going'
-                          ? 'bg-green-600 text-white focus:ring-green-500'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500'
+                          ? 'bg-[#7C3AED] text-white focus:ring-[#7C3AED] shadow-lg'
+                          : 'bg-[#7C3AED]/10 text-[#7C3AED] hover:bg-[#7C3AED]/20 focus:ring-[#7C3AED] border border-[#7C3AED]/30'
                       }`}
                     >
                       ✅ Going
@@ -345,8 +343,8 @@ export default function EventDetailPage() {
                       disabled={isRsvping}
                       className={`px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                         rsvpStatus === 'maybe'
-                          ? 'bg-yellow-600 text-white focus:ring-yellow-500'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500'
+                          ? 'bg-[#F59E0B] text-white focus:ring-[#F59E0B] shadow-lg'
+                          : 'bg-[#F59E0B]/10 text-[#F59E0B] hover:bg-[#F59E0B]/20 focus:ring-[#F59E0B] border border-[#F59E0B]/30'
                       }`}
                     >
                       🤔 Maybe
@@ -357,8 +355,8 @@ export default function EventDetailPage() {
                       disabled={isRsvping}
                       className={`px-4 py-3 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
                         rsvpStatus === 'not_going'
-                          ? 'bg-red-600 text-white focus:ring-red-500'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500'
+                          ? 'bg-red-600 text-white focus:ring-red-500 shadow-lg'
+                          : 'bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500 border border-red-300'
                       }`}
                     >
                       ❌ Not Going
@@ -376,8 +374,8 @@ export default function EventDetailPage() {
                 <div className="text-center py-4">
                   <p className="text-gray-600 mb-4">Sign in to RSVP to this event</p>
                   <Link
-                    href="/login"
-                    className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
+                    href="/welcome"
+                    className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
                   >
                     Sign In
                   </Link>
@@ -387,10 +385,10 @@ export default function EventDetailPage() {
 
             {/* Edit Button for Event Owner */}
             {isOwner && (
-              <div className="border-t border-gray-100 pt-6">
+              <div className="border-t border-[#7C3AED]/20 pt-6">
                 <Link
                   href={`/events/${event.id}/edit`}
-                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#4B89E8] bg-[#60A5FA] bg-opacity-15 border border-[#60A5FA] border-opacity-30 rounded-lg hover:bg-opacity-25 hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-all"
+                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#6D28D9] bg-[#7C3AED] bg-opacity-15 border border-[#7C3AED] border-opacity-30 rounded-lg hover:bg-opacity-25 hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-all"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -404,19 +402,19 @@ export default function EventDetailPage() {
 
         {/* RSVP List */}
         {rsvps.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-[#7C3AED]/20 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Who's Going</h2>
             <div className="space-y-3">
               {isLoadingRsvps ? (
                 <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#60A5FA] mx-auto"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#7C3AED] mx-auto"></div>
                   <p className="mt-2 text-sm text-gray-600">Loading RSVPs...</p>
                 </div>
               ) : (
                 rsvps.map((rsvp) => (
-                  <div key={rsvp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div key={rsvp.id} className="flex items-center justify-between p-3 bg-[#7C3AED]/5 rounded-lg border border-[#7C3AED]/20">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-[#60A5FA] rounded-full flex items-center justify-center text-white font-medium text-sm">
+                      <div className="w-8 h-8 bg-[#7C3AED] rounded-full flex items-center justify-center text-white font-medium text-sm">
                         {(rsvp.users?.name || rsvp.users?.email || 'U').charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -429,8 +427,8 @@ export default function EventDetailPage() {
                       </div>
                     </div>
                     <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      rsvp.status === 'going' ? 'bg-green-100 text-green-800' :
-                      rsvp.status === 'maybe' ? 'bg-yellow-100 text-yellow-800' :
+                      rsvp.status === 'going' ? 'bg-[#7C3AED]/20 text-[#7C3AED] border border-[#7C3AED]/30' :
+                      rsvp.status === 'maybe' ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {rsvp.status === 'going' ? 'Going' : 

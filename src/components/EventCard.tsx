@@ -108,13 +108,10 @@ export default function EventCard({ event }: EventCardProps) {
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#60A5FA] to-[#3B82F6] transition-transform duration-200 group-hover:scale-105">
-            <img
-              src="/BudEvent-pin.svg"
-              alt="BudEvent"
-              className="w-40 h-40 opacity-80"
-            />
-
+          <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
+            <span className="text-white text-lg font-bold tracking-wide opacity-90 text-center px-4 leading-tight">
+              {event.title}
+            </span>
           </div>
         )}
         
@@ -192,7 +189,7 @@ export default function EventCard({ event }: EventCardProps) {
         <div className="mt-auto pt-3">
           <Link
             href={`/events/${event.id}`}
-            className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-white bg-[#60A5FA] rounded-lg hover:bg-[#4B89E8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#7C3AED] rounded-md hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -205,7 +202,7 @@ export default function EventCard({ event }: EventCardProps) {
           {isOwner && (
             <Link
               href={`/events/${event.id}/edit`}
-              className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-[#4B89E8] bg-[#60A5FA]/10 border border-[#60A5FA]/30 rounded-lg hover:bg-[#60A5FA]/20 hover:border-[#60A5FA]/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-all mt-2"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#6D28D9] bg-[#7C3AED]/10 border border-[#7C3AED]/30 rounded-md hover:bg-[#7C3AED]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

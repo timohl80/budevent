@@ -106,7 +106,7 @@ export default function ShareButton({ event, className = '' }: ShareButtonProps)
     <div className={`relative ${className}`}>
       <button
         onClick={handleShare}
-        className="inline-flex items-center px-3 py-2 text-sm font-medium text-[#60A5FA] bg-[#60A5FA]/10 rounded-md hover:bg-[#60A5FA]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#60A5FA] transition-colors"
+        className="inline-flex items-center px-3 py-2 text-sm font-medium text-[#7C3AED] bg-[#7C3AED]/10 rounded-md hover:bg-[#7C3AED]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
         aria-label="Share event"
       >
         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
