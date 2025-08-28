@@ -93,17 +93,9 @@ export default function RegisterPage() {
       } else {
         console.log('Registration successful:', result);
         if (result.requiresApproval) {
-          const approvalMessage = 'Registration successful! Your account is pending admin approval. You will receive an email when your account is approved.';
-          setSuccess(approvalMessage);
-          
-          // Save to localStorage for persistence
-          localStorage.setItem('budevent_pending_approval', JSON.stringify({
-            message: approvalMessage,
-            email: data.email,
-            timestamp: new Date().toISOString()
-          }));
-          
-          // Don't redirect automatically - let user read the message and choose when to continue
+          // Redirect to the dedicated success page
+          router.push(`/registration-success?email=${encodeURIComponent(data.email)}&name=${encodeURIComponent(data.name)}`);
+          return; // Exit early since we're redirecting
         } else {
           setSuccess('Account created successfully! Redirecting to login...');
           setTimeout(() => {

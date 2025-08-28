@@ -106,18 +106,22 @@ function WelcomeContent() {
       });
 
       const result = await response.json();
+      console.log('Registration response:', result); // Debug log
 
       if (!response.ok) {
         setError(result.error || 'Registration failed');
       } else {
         if (result.requiresApproval) {
-          setSuccess('Registration successful! Your account is pending admin approval. You will receive an email when your account is approved.');
-          // Switch to login mode after successful registration
-          setTimeout(() => {
-            setIsLoginMode(true);
-            setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-            setSuccess('');
-          }, 3000);
+          console.log('User requires approval, redirecting to success page...'); // Debug log
+          // Redirect to the dedicated success page
+          try {
+            await router.push(`/registration-success?email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.name)}`);
+          } catch (redirectError) {
+            console.error('Router push failed, using window.location:', redirectError);
+            // Fallback to window.location if router.push fails
+            window.location.href = `/registration-success?email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.name)}`;
+          }
+          return; // Exit early since we're redirecting
         } else {
           setSuccess('Account created successfully! You can now log in.');
           setIsLoginMode(true);
