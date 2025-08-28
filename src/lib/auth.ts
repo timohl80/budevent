@@ -39,7 +39,11 @@ export const authOptions: NextAuthOptions = {
           // Check if user is approved
           if (!users.is_approved) {
             console.log('User not approved:', credentials.email)
-            throw new Error('Account pending approval. Please wait for admin approval before logging in.');
+            // Create a custom error that includes user info for the error page
+            const error = new Error('Account pending approval. Please wait for admin approval before logging in.');
+            (error as any).userEmail = credentials.email;
+            (error as any).userName = users.name;
+            throw error;
           }
 
           // Verify password
@@ -95,8 +99,8 @@ export const authOptions: NextAuthOptions = {
             
             // Check if approved
             if (!existingUser.is_approved) {
-              console.log('User not approved, throwing error')
-              throw new Error('Account pending approval. Please wait for admin approval before logging in.')
+              console.log('User not approved, redirecting to approval pending page')
+              return '/approval-pending?email=' + encodeURIComponent(user.email || '') + '&name=' + encodeURIComponent(user.name || '')
             }
             
             // Important: Update the user object to use our database ID
@@ -141,11 +145,15 @@ export const authOptions: NextAuthOptions = {
               return false
             }
             console.log('Google user created with pending approval:', newUser)
-            // Don't allow sign-in until approved
-            throw new Error('Account created successfully! Please wait for admin approval before logging in.')
+            // Redirect to approval pending page instead of throwing error
+            return '/approval-pending?email=' + encodeURIComponent(user.email || '') + '&name=' + encodeURIComponent(user.name || '')
           }
         } catch (error) {
           console.error('Google sign-in error:', error)
+          // If it's an approval error, redirect to approval pending page
+          if (error instanceof Error && error.message.includes('pending approval')) {
+            return '/approval-pending?email=' + encodeURIComponent(user.email || '') + '&name=' + encodeURIComponent(user.name || '')
+          }
           return false
         }
       }
@@ -176,6 +184,8 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth',
+    error: '/auth/error',
+    signOut: '/',
   },
   secret: process.env.NEXTAUTH_SECRET,
   // Security options

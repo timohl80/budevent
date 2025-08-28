@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, getSession } from 'next-auth/react';
 
 export default function TopNav() {
   const { data: session } = useSession();
@@ -47,6 +47,30 @@ export default function TopNav() {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Custom sign-out function that handles Google sign-out
+  const handleSignOut = async () => {
+    try {
+      // Sign out from NextAuth with redirect to Google sign-out
+      // This will clear both BudEvent session and Google session
+      await signOut({ 
+        callbackUrl: '/',
+        redirect: true
+      });
+      
+      // Force Google sign-out by redirecting to Google's logout page
+      // This ensures the user is completely signed out from Google
+      setTimeout(() => {
+        const googleSignOutUrl = `https://accounts.google.com/Logout?continue=${encodeURIComponent(window.location.origin)}`;
+        window.location.href = googleSignOutUrl;
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Fallback to normal sign out
+      await signOut({ callbackUrl: '/' });
+    }
   };
 
   // Check if user is admin
@@ -110,7 +134,7 @@ export default function TopNav() {
                 Welcome, {session.user?.name || session.user?.email}
               </span>
               <button 
-                onClick={() => signOut({ callbackUrl: '/' })}
+                onClick={handleSignOut}
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#DB2777] rounded-lg hover:bg-[#BE185D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DB2777] transition-colors"
               >
                 Sign out
@@ -207,7 +231,7 @@ export default function TopNav() {
                   Welcome, {session.user?.name || session.user?.email}
                 </div>
                 <button 
-                  onClick={() => signOut({ callbackUrl: '/' })}
+                  onClick={handleSignOut}
                   className="w-full text-left px-3 py-2 text-sm font-medium text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
                 >
                   Sign out
