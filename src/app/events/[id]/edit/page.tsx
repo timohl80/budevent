@@ -28,6 +28,10 @@ export default function EditEventPage() {
     isPublic: true,
     status: 'active' as 'active' | 'cancelled' | 'completed',
     externalLink: '',
+    eventDate: '',
+    eventTime: '',
+    eventHour: '',
+    eventMinute: '',
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
@@ -62,6 +66,10 @@ export default function EditEventPage() {
           isPublic: currentEvent.isPublic,
           status: currentEvent.status,
           externalLink: currentEvent.externalLink || '',
+          eventDate: new Date(currentEvent.startsAt).toISOString().slice(0, 10),
+          eventTime: new Date(currentEvent.startsAt).toISOString().slice(11, 16),
+          eventHour: new Date(currentEvent.startsAt).getHours().toString(),
+          eventMinute: new Date(currentEvent.startsAt).getMinutes().toString(),
         });
         setUploadedImageUrl(currentEvent.imageUrl || '');
       } catch (err) {
@@ -148,7 +156,7 @@ export default function EditEventPage() {
     try {
       // Convert local datetime to ISO string while preserving local time
       // This prevents timezone conversion issues
-      const localDateTime = new Date(formData.startsAt);
+      const localDateTime = new Date(formData.eventDate + 'T' + formData.eventHour + ':' + formData.eventMinute);
       
       // Create a new date object that preserves the local time
       // by manually constructing the ISO string without timezone conversion
@@ -162,7 +170,7 @@ export default function EditEventPage() {
       // Create ISO string in local time (no timezone conversion)
       const isoDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
       
-      console.log('Local datetime input:', formData.startsAt);
+      console.log('Local datetime input:', formData.eventDate + 'T' + formData.eventHour + ':' + formData.eventMinute);
       console.log('Local datetime object:', localDateTime);
       console.log('Converted datetime (preserved local time):', isoDateTime);
       
@@ -186,6 +194,30 @@ export default function EditEventPage() {
       setError('Failed to update event. Please try again.');
       setSaving(false);
     }
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      eventDate: value
+    }));
+  };
+
+  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      eventHour: value
+    }));
+  };
+
+  const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      eventMinute: value
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -288,19 +320,70 @@ export default function EditEventPage() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="startsAt" className="block text-sm font-medium text-[#2D3436]">
+            <label className="block text-sm font-medium text-[#2D3436]">
               Start Date & Time * (Swedish Time)
             </label>
-            <input
-              type="datetime-local"
-              id="startsAt"
-              name="startsAt"
-              required
-              value={formData.startsAt}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
-            />
-            <p className="text-sm text-[#2D3436] opacity-70">All times are in Swedish time (CET/CEST)</p>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Date Input */}
+              <div>
+                <label htmlFor="eventDate" className="block text-sm font-medium text-[#2D3436] mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  id="eventDate"
+                  name="eventDate"
+                  required
+                  value={formData.eventDate || ''}
+                  onChange={handleDateChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+                />
+              </div>
+              
+              {/* Time Input */}
+              <div>
+                <label htmlFor="eventTime" className="block text-sm font-medium text-[#2D3436] mb-2">
+                  Time (24-hour)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Hour Selector */}
+                  <select
+                    id="eventHour"
+                    name="eventHour"
+                    required
+                    value={formData.eventHour || ''}
+                    onChange={handleHourChange}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+                  >
+                    <option value="">Hour</option>
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={String(i).padStart(2, '0')}>
+                        {String(i).padStart(2, '0')}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {/* Minute Selector */}
+                  <select
+                    id="eventMinute"
+                    name="eventMinute"
+                    required
+                    value={formData.eventMinute || ''}
+                    onChange={handleMinuteChange}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+                  >
+                    <option value="">Min</option>
+                    {Array.from({ length: 60 }, (_, i) => (
+                      <option key={i} value={String(i).padStart(2, '0')}>
+                        {String(i).padStart(2, '0')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-xs text-[#2D3436] opacity-70 mt-1">Select hour (00-23) and minute (00-59)</p>
+              </div>
+            </div>
+            <p className="text-sm text-[#2D3436] opacity-70">All times are in Swedish time (CET/CEST) - 24-hour format</p>
           </div>
 
           <div className="space-y-2">

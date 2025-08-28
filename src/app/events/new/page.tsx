@@ -24,6 +24,10 @@ function CreateEventForm() {
     capacity: '',
     isPublic: true,
     externalLink: '',
+    eventDate: '', // Added for date input
+    eventTime: '', // Added for time input
+    eventHour: '', // Added for hour input
+    eventMinute: '', // Added for minute input
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [tempEventId, setTempEventId] = useState<string>('');
@@ -81,32 +85,18 @@ function CreateEventForm() {
     console.log('User ID:', (session?.user as any)?.id);
     console.log('Form data:', formData);
 
-    // Convert local datetime to ISO string while preserving local time
-    // This prevents timezone conversion issues
-    const localDateTime = new Date(formData.startsAt);
+    // Combine date and time to form the ISO string
+    const date = formData.eventDate;
+    const time = `${formData.eventHour}:${formData.eventMinute}:00.000Z`; // Ensure seconds are 00
     
-    // Create a new date object that preserves the local time
-    // by manually constructing the ISO string without timezone conversion
-    const year = localDateTime.getFullYear();
-    const month = String(localDateTime.getMonth() + 1).padStart(2, '0');
-    const day = String(localDateTime.getDate()).padStart(2, '0');
-    const hours = String(localDateTime.getHours()).padStart(2, '0');
-    const minutes = String(localDateTime.getMinutes()).padStart(2, '0');
-    const seconds = String(localDateTime.getSeconds()).padStart(2, '0');
-    
-    // Create ISO string in local time (no timezone conversion)
-    const isoDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
-    
-    console.log('Local datetime input:', formData.startsAt);
-    console.log('Local datetime object:', localDateTime);
-    console.log('Converted datetime (preserved local time):', isoDateTime);
+    console.log('Combined date and time:', time);
     
     try {
           // Add the new event to Supabase
     const newEvent = await EventsService.createEvent({
       title: formData.title,
       description: formData.description,
-      startsAt: isoDateTime,
+      startsAt: `${date}T${time}`, // Combine date and time
       location: formData.location,
       imageUrl: uploadedImageUrl || undefined,
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
@@ -130,6 +120,30 @@ function CreateEventForm() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -216,19 +230,70 @@ function CreateEventForm() {
 
               {/* Date & Time */}
               <div className="space-y-3">
-                <label htmlFor="startsAt" className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-700">
                   Start Date & Time * (Swedish Time)
                 </label>
-                <input
-                  type="datetime-local"
-                  id="startsAt"
-                  name="startsAt"
-                  required
-                  value={formData.startsAt}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
-                />
-                <p className="text-sm text-gray-500">All times are in Swedish time (CET/CEST)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Date Input */}
+                  <div>
+                    <label htmlFor="eventDate" className="block text-sm font-medium text-gray-600 mb-2">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      id="eventDate"
+                      name="eventDate"
+                      required
+                      value={formData.eventDate || ''}
+                      onChange={handleDateChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                    />
+                  </div>
+                  
+                  {/* Time Input */}
+                  <div>
+                    <label htmlFor="eventTime" className="block text-sm font-medium text-gray-600 mb-2">
+                      Time (24-hour)
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Hour Selector */}
+                      <select
+                        id="eventHour"
+                        name="eventHour"
+                        required
+                        value={formData.eventHour || ''}
+                        onChange={handleHourChange}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                      >
+                        <option value="">Hour</option>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={String(i).padStart(2, '0')}>
+                            {String(i).padStart(2, '0')}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {/* Minute Selector */}
+                      <select
+                        id="eventMinute"
+                        name="eventMinute"
+                        required
+                        value={formData.eventMinute || ''}
+                        onChange={handleMinuteChange}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                      >
+                        <option value="">Min</option>
+                        {Array.from({ length: 60 }, (_, i) => (
+                          <option key={i} value={String(i).padStart(2, '0')}>
+                            {String(i).padStart(2, '0')}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Select hour (00-23) and minute (00-59)</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">All times are in Swedish time (CET/CEST) - 24-hour format</p>
               </div>
 
               {/* Location */}
