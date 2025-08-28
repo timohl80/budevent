@@ -111,7 +111,7 @@ export class EmailService {
       const calendarLinks = generateCalendarLinks(event);
 
       const { data: result, error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+        from: process.env.RESEND_FROM_EMAIL || 'hello@budevent.se',
         to: [data.userEmail],
         subject: `You're signed up for ${data.eventName}! 🎉`,
         html: this.generateRSVPEmailHTML(data, calendarLinks),
@@ -584,7 +584,7 @@ export class EmailService {
 
     try {
       const { error } = await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: process.env.RESEND_FROM_EMAIL || 'hello@budevent.se',
         to: ['test@example.com'],
         subject: 'Test Email',
         html: '<p>This is a test email to verify the email service is working.</p>',
