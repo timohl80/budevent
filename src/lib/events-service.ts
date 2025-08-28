@@ -372,7 +372,7 @@ export class EventsService {
   }
 
   // Update an event
-  static async updateEvent(id: string, updates: Partial<Omit<EventLite, 'id'>>): Promise<EventLite> {
+  static async updateEvent(id: string, updates: Partial<Omit<EventLite, 'id'>>, userToken?: string): Promise<EventLite> {
     const updateData: Partial<EventInsert> = {};
     
     if (updates.title !== undefined) updateData.title = updates.title;
@@ -385,9 +385,24 @@ export class EventsService {
     if (updates.status !== undefined) updateData.status = updates.status;
     if (updates.externalLink !== undefined) updateData.external_link = updates.externalLink || null;
 
-    console.log('Updating event with data:', { id, updateData });
+    console.log('Updating event with data:', { id, updateData, hasUserToken: !!userToken });
 
-    const { data, error } = await supabase
+    // Create a Supabase client with the user's token if provided
+    let supabaseClient = supabase;
+    if (userToken) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: {
+          headers: {
+            Authorization: `Bearer ${userToken}`
+          }
+        }
+      });
+    }
+
+    const { data, error } = await supabaseClient
       .from('events')
       .update(updateData)
       .eq('id', id)
@@ -396,7 +411,25 @@ export class EventsService {
 
     if (error) {
       console.error('Error updating event:', error);
-      throw new Error('Failed to update event');
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // Provide more specific error messages based on error codes
+      if (error.code === '42501') {
+        throw new Error('Permission denied - check RLS policies or user authentication');
+      } else if (error.code === '23503') {
+        throw new Error('Cannot update event - check foreign key constraints');
+      } else if (error.code === '42P01') {
+        throw new Error('Table does not exist - check database setup');
+      } else if (error.code === '23502') {
+        throw new Error('Required field missing - check your input data');
+      }
+      
+      throw new Error(`Failed to update event: ${error.message || 'Unknown database error'}`);
     }
 
     console.log('Event updated successfully:', data);

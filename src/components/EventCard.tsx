@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EventsService } from '@/lib/events-service';
+import ShareButton from './ShareButton';
 
 interface EventCardProps {
   event: EventLite;
@@ -15,6 +16,7 @@ export default function EventCard({ event }: EventCardProps) {
   // Use base64 directly for better compatibility
   const [imageSrc, setImageSrc] = useState<string>('');
   const [rsvpStatus, setRsvpStatus] = useState<'going' | 'maybe' | 'not_going' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     // Set image source if available
@@ -45,6 +47,23 @@ export default function EventCard({ event }: EventCardProps) {
     } catch (error) {
       console.error('Failed to check user RSVP status:', error);
       setRsvpStatus(null);
+    }
+  };
+
+  const handleQuickRSVP = async () => {
+    if (!session?.user) return;
+    
+    setIsLoading(true);
+    try {
+      await EventsService.rsvpToEvent(event.id, (session.user as { id: string }).id, 'going');
+      setRsvpStatus('going');
+      // Refresh the RSVP status
+      await checkUserRSVPStatus();
+    } catch (error) {
+      console.error('Failed to RSVP to event:', error);
+      // You could add a toast notification here
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -185,6 +204,34 @@ export default function EventCard({ event }: EventCardProps) {
           </p>
         )}
         
+        {/* Quick RSVP Button */}
+        {session?.user && !isOwner && event.status === 'active' && !rsvpStatus && (
+          <div className="mb-3">
+            <button
+              onClick={handleQuickRSVP}
+              disabled={isLoading}
+              className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing up...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Quick Sign Up
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* View Details Button */}
         <div className="mt-auto pt-3">
           <Link
@@ -225,6 +272,11 @@ export default function EventCard({ event }: EventCardProps) {
               Edit Event
             </Link>
           )}
+        </div>
+        
+        {/* Share Button */}
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <ShareButton event={event} />
         </div>
       </div>
     </article>

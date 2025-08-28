@@ -169,42 +169,135 @@ export default function EditEventPage() {
     try {
       // Convert local datetime to ISO string while preserving local time
       // This prevents timezone conversion issues
-      const localDateTime = new Date(formData.eventDate + 'T' + formData.eventHour + ':' + formData.eventMinute);
+      console.log('Form data for datetime:', {
+        eventDate: formData.eventDate,
+        eventHour: formData.eventHour,
+        eventMinute: formData.eventMinute
+      });
       
-      // Create a new date object that preserves the local time
-      // by manually constructing the ISO string without timezone conversion
-      const year = localDateTime.getFullYear();
-      const month = String(localDateTime.getMonth() + 1).padStart(2, '0');
-      const day = String(localDateTime.getDate()).padStart(2, '0');
-      const hours = String(localDateTime.getHours()).padStart(2, '0');
-      const minutes = String(localDateTime.getMinutes()).padStart(2, '0');
-      const seconds = String(localDateTime.getSeconds()).padStart(2, '0');
+      // Validate the date components
+      if (!formData.eventDate || !formData.eventHour || !formData.eventMinute) {
+        throw new Error('Date, hour, and minute are required');
+      }
+      
+      // Parse the date components safely
+      const year = parseInt(formData.eventDate.split('-')[0]);
+      const month = parseInt(formData.eventDate.split('-')[1]) - 1; // Month is 0-indexed
+      const day = parseInt(formData.eventDate.split('-')[2]);
+      const hours = parseInt(formData.eventHour);
+      const minutes = parseInt(formData.eventMinute);
+      
+      console.log('Parsed date components:', { year, month, day, hours, minutes });
+      
+      // Validate the parsed values
+      if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
+        throw new Error('Invalid date or time values');
+      }
+      
+      // Create a proper Date object
+      const localDateTime = new Date(year, month, day, hours, minutes, 0, 0);
+      
+      // Validate the created date
+      if (isNaN(localDateTime.getTime())) {
+        throw new Error('Invalid date created from components');
+      }
       
       // Create ISO string in local time (no timezone conversion)
-      const isoDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+      const isoDateTime = localDateTime.toISOString().slice(0, 19) + '.000';
       
       console.log('Local datetime input:', formData.eventDate + 'T' + formData.eventHour + ':' + formData.eventMinute);
       console.log('Local datetime object:', localDateTime);
       console.log('Converted datetime (preserved local time):', isoDateTime);
       
-      // Update the event
-      await EventsService.updateEvent(eventId, {
-        title: formData.title,
-        description: formData.description,
-        startsAt: isoDateTime,
-        location: formData.location,
-        imageUrl: uploadedImageUrl || undefined,
-        capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
-        isPublic: formData.isPublic,
-        status: formData.status,
-        externalLink: formData.externalLink,
+      console.log('About to call EventsService.updateEvent with data:', {
+        eventId,
+        updateData: {
+          title: formData.title,
+          description: formData.description,
+          startsAt: isoDateTime,
+          location: formData.location,
+          imageUrl: uploadedImageUrl || undefined,
+          capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+          isPublic: formData.isPublic,
+          status: formData.status,
+          externalLink: formData.externalLink,
+        }
       });
+
+      // Create a client-side Supabase client with the user's session
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      
+      // Create a new Supabase client for this request
+      const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+      
+      console.log('Using client-side Supabase client for update');
+
+      // Update the event directly using the client-side client
+      const { data: updatedEventData, error: updateError } = await supabaseClient
+        .from('events')
+        .update({
+          title: formData.title,
+          description: formData.description,
+          starts_at: isoDateTime,
+          location: formData.location,
+          image_url: uploadedImageUrl || null,
+          capacity: formData.capacity ? parseInt(formData.capacity) : null,
+          is_public: formData.isPublic,
+          status: formData.status,
+          external_link: formData.externalLink,
+        })
+        .eq('id', eventId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Supabase update error:', updateError);
+        throw new Error(`Database update failed: ${updateError.message}`);
+      }
+
+      console.log('Event updated successfully:', updatedEventData);
+
+      console.log('Event updated successfully:', updatedEventData);
 
       // Redirect back to events page
       router.push('/events');
     } catch (error) {
       console.error('Error updating event:', error);
-      setError('Failed to update event. Please try again.');
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      
+      // Provide more detailed error information
+      let errorMessage = 'Failed to update event. Please try again.';
+      
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        
+        // Check for specific error types
+        if (error.message.includes('Failed to update event')) {
+          errorMessage = 'Database update failed. Please check your input and try again.';
+        } else if (error.message.includes('permission') || error.message.includes('unauthorized')) {
+          errorMessage = 'Permission denied. You may not have access to edit this event.';
+        } else if (error.message.includes('not found')) {
+          errorMessage = 'Event not found. It may have been deleted.';
+        } else {
+          errorMessage = `Update failed: ${error.message}`;
+        }
+      } else {
+        // Handle non-Error objects
+        console.error('Non-Error object caught:', error);
+        if (typeof error === 'object' && error !== null) {
+          errorMessage = `Update failed: ${JSON.stringify(error)}`;
+        }
+      }
+      
+      setError(errorMessage);
       setSaving(false);
     }
   };
