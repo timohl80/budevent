@@ -22,7 +22,7 @@ export default function EventsPage() {
     if (status === 'loading') return; // Still loading, wait
     
     if (status === 'unauthenticated') {
-      router.push('/welcome');
+              router.push('/auth');
       return;
     }
   }, [status, router]);

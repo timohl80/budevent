@@ -87,14 +87,7 @@ export default function TopNav() {
                 Events
               </Link>
             </>
-          ) : (
-            <Link 
-              href="/welcome" 
-              className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
-            >
-              Welcome
-            </Link>
-          )}
+          ) : null}
           {session && (
             <Link 
               href="/dashboard" 
@@ -125,10 +118,10 @@ export default function TopNav() {
             </div>
           ) : (
             <Link
-              href="/login"
+              href="/auth"
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#3B82F6] rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors"
             >
-              Sign in
+              Sign In
             </Link>
           )}
         </div>
@@ -191,14 +184,7 @@ export default function TopNav() {
                   Events
                 </Link>
               </>
-            ) : (
-              <Link
-                href="/welcome"
-                className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
-              >
-                Welcome
-              </Link>
-            )}
+            ) : null}
             {session && (
               <Link
                 href="/dashboard"
@@ -229,10 +215,10 @@ export default function TopNav() {
               </div>
             ) : (
               <Link
-                href="/login"
+                href="/auth"
                 className="block px-3 py-2 text-sm font-medium text-[#3B82F6] hover:text-[#2563EB] hover:bg-[#374151] rounded-lg transition-colors"
               >
-                Sign in
+                Sign In
               </Link>
             )}
           </div>

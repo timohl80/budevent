@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { EmailService } from '@/lib/email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,8 +49,19 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (userData) {
-        // You can implement email sending here
-        console.log(`User ${userData.email} has been approved`);
+        console.log(`User ${userData.email} has been approved, sending notification email...`);
+        
+        // Send approval email
+        const emailSent = await EmailService.sendApprovalNotification(
+          userData.email, 
+          userData.name
+        );
+        
+        if (emailSent) {
+          console.log(`Approval email sent successfully to ${userData.email}`);
+        } else {
+          console.error(`Failed to send approval email to ${userData.email}`);
+        }
       }
     } catch (emailError) {
       console.error('Failed to send approval email:', emailError);

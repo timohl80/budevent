@@ -385,7 +385,7 @@ export class EmailService {
             </div>
             ` : ''}
             
-            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/events" class="cta-button">
+            <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/events" class="cta-button">
               View All Events
             </a>
             
@@ -402,6 +402,175 @@ export class EmailService {
       </body>
       </html>
     `;
+  }
+
+  /**
+   * Send approval notification email to user
+   */
+  static async sendApprovalNotification(userEmail: string, userName: string | null): Promise<boolean> {
+    if (!resend) {
+      console.error('Resend client not initialized - missing API key');
+      return false;
+    }
+
+    try {
+      const { error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'hello@budevent.se',
+        to: [userEmail],
+        subject: '🎉 Your BudEvent Account Has Been Approved!',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Account Approved - BudEvent</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #7C3AED 0%, #F59E0B 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+              .cta-button { display: inline-block; background: #7C3AED; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
+              .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🎉 Account Approved!</h1>
+                <p>Welcome to BudEvent!</p>
+              </div>
+              
+              <div class="content">
+                <h2>Hello ${userName || 'there'}!</h2>
+                
+                <p>Great news! Your BudEvent account has been approved by our admin team. You can now:</p>
+                
+                <ul>
+                  <li>✅ Sign in to your account</li>
+                  <li>✅ Create and manage events</li>
+                  <li>✅ RSVP to events</li>
+                  <li>✅ Connect with other users</li>
+                </ul>
+                
+                <p>Ready to get started? Click the button below to sign in:</p>
+                
+                <div style="text-align: center;">
+                  <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3001'}/auth" class="cta-button">
+                    Sign In to BudEvent
+                  </a>
+                </div>
+                
+                <p>If you have any questions or need assistance, feel free to reach out to our support team.</p>
+                
+                <p>Welcome aboard! 🚀</p>
+              </div>
+              
+              <div class="footer">
+                <p>This email was sent from <strong>BudEvent</strong></p>
+                <p>© 2024 BudEvent. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      if (error) {
+        console.error('Failed to send approval email:', error);
+        return false;
+      }
+
+      console.log(`Approval email sent successfully to ${userEmail}`);
+      return true;
+    } catch (error) {
+      console.error('Error sending approval email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send rejection notification email to user
+   */
+  static async sendRejectionNotification(userEmail: string, userName: string | null, reason?: string): Promise<boolean> {
+    if (!resend) {
+      console.error('Resend client not initialized - missing API key');
+      return false;
+    }
+
+    try {
+      const { error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'hello@budevent.se',
+        to: [userEmail],
+        subject: '📝 BudEvent Account Update',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Account Update - BudEvent</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #6B7280; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+              .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+              .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📝 Account Update</h1>
+                <p>Important Information About Your Registration</p>
+              </div>
+              
+              <div class="content">
+                <h2>Hello ${userName || 'there'}!</h2>
+                
+                <p>We've reviewed your BudEvent account registration and unfortunately, we're unable to approve it at this time.</p>
+                
+                ${reason ? `
+                <div style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                  <strong>Reason:</strong> ${reason}
+                </div>
+                ` : ''}
+                
+                <p>This could be due to various reasons such as:</p>
+                
+                <ul>
+                  <li>Incomplete or inaccurate information</li>
+                  <li>Policy violations</li>
+                  <li>Security concerns</li>
+                  <li>Other administrative reasons</li>
+                </ul>
+                
+                <p>If you believe this decision was made in error, or if you'd like to provide additional information, please contact our support team.</p>
+                
+                <p>Thank you for your interest in BudEvent.</p>
+              </div>
+              
+              <div class="footer">
+                <p>This email was sent from <strong>BudEvent</strong></p>
+                <p>© 2024 BudEvent. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      if (error) {
+        console.error('Failed to send rejection email:', error);
+        return false;
+      }
+
+      console.log(`Rejection email sent successfully to ${userEmail}`);
+      return true;
+    } catch (error) {
+      console.error('Error sending rejection email:', error);
+      return false;
+    }
   }
 
   /**

@@ -62,7 +62,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret_here
    npm run dev
    ```
 
-2. **Go to your welcome page** (`http://localhost:3002/welcome`)
+2. **Go to your auth page** (`http://localhost:3002/auth`)
 3. **Click "Continue with Google"**
 4. **Complete the Google OAuth flow**
 5. **Verify you're redirected to the home page**

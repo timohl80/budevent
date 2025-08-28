@@ -101,7 +101,7 @@ export default function EditEventPage() {
   // Redirect to welcome page if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/welcome');
+              router.push('/auth');
     }
   }, [status, router]);
 

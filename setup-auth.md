@@ -52,7 +52,7 @@ CREATE POLICY "Allow authenticated insert" ON public.events
 
 1. **Start your dev server**: `pnpm dev`
 2. **Visit `/register`** to create an account
-3. **Visit `/login`** to sign in
+3. **Visit `/auth`** to sign in
 4. **Try accessing `/events`** - should redirect to login if not authenticated
 5. **After login, access `/events`** - should work
 

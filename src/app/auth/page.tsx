@@ -25,6 +25,10 @@ function WelcomeContent() {
     confirmPassword: ''
   });
 
+  // Password visibility state
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated' && session) {
@@ -170,16 +174,16 @@ function WelcomeContent() {
             </div>
             <div className="space-y-4">
               <button
-                onClick={() => window.location.href = '/welcome'}
+                onClick={() => window.location.href = '/auth'}
                 className="w-full py-3 px-4 bg-[#3B82F6] text-white font-medium rounded-lg hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors"
               >
                 Try Again
               </button>
               <Link
-                href="/welcome"
+                href="/auth"
                 className="w-full inline-block py-3 px-4 text-[#9CA3AF] hover:text-white transition-colors"
               >
-                Back to Welcome Page
+                Back to Sign In
               </Link>
             </div>
           </div>
@@ -327,16 +331,108 @@ function WelcomeContent() {
               <label htmlFor="password" className="block text-sm font-medium text-[#F3F4F6] mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 border border-[#374151] bg-[#111827] text-[#F3F4F6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-[#7C3AED] transition-colors placeholder-[#6B7280]"
-                placeholder={isLoginMode ? "Enter your password" : "Create a password"}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-[#374151] bg-[#111827] text-[#F3F4F6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-[#7C3AED] transition-colors placeholder-[#6B7280]"
+                  placeholder={isLoginMode ? "Enter your password" : "Create a password"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.96 9.96 0 011.563-2.037L5.1 10.9l2.775 2.775a3 3 0 002.12.875H17.25" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.825 19.825A10.05 10.05 0 0012 20c4.478 0 8.268-2.943 9.543-7a9.96 9.96 0 00-1.563-2.037L18.9 13.1l-2.775 2.775a3 3 0 01-2.12.875H5.25" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              
+              {/* Password Toggle Hint */}
+              <p className="mt-1 text-xs text-gray-500 flex items-center">
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Click the eye icon to show/hide your password
+              </p>
+              
+              {/* Password Requirements (only for registration) */}
+              {!isLoginMode && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs font-medium text-gray-400 mb-2">Password must contain:</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-xs">
+                      <span className={`w-3 h-3 mr-2 rounded-full flex items-center justify-center ${
+                        formData.password.length >= 8 
+                          ? 'bg-green-500' 
+                          : 'bg-gray-500'
+                      }`}>
+                        {formData.password.length >= 8 ? '✓' : '○'}
+                      </span>
+                      <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}>
+                        At least 8 characters
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <span className={`w-3 h-3 mr-2 rounded-full flex items-center justify-center ${
+                        /[A-Z]/.test(formData.password)
+                          ? 'bg-green-500' 
+                          : 'bg-gray-500'
+                      }`}>
+                        {/[A-Z]/.test(formData.password) ? '✓' : '○'}
+                      </span>
+                      <span className={/[A-Z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                        One uppercase letter (A-Z)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <span className={`w-3 h-3 mr-2 rounded-full flex items-center justify-center ${
+                        /[a-z]/.test(formData.password)
+                          ? 'bg-green-500' 
+                          : 'bg-gray-500'
+                      }`}>
+                        {/[a-z]/.test(formData.password) ? '✓' : '○'}
+                      </span>
+                      <span className={/[a-z]/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                        One lowercase letter (a-z)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs">
+                      <span className={`w-3 h-3 mr-2 rounded-full flex items-center justify-center ${
+                        /\d/.test(formData.password)
+                          ? 'bg-green-500' 
+                          : 'bg-gray-500'
+                      }`}>
+                        {/\d/.test(formData.password) ? '✓' : '○'}
+                      </span>
+                      <span className={/\d/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                        One number (0-9)
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Example Password */}
+                  <div className="mt-3 pt-2 border-t border-gray-600">
+                    <p className="text-xs text-gray-400 mb-1">💡 Example: <span className="font-mono text-gray-300">Password123</span></p>
+                    <p className="text-xs text-gray-500">This meets all requirements: 11 chars, uppercase P, lowercase assword, numbers 123</p>
+                  </div>
+                </div>
+              )}
+              
               {/* Forgot Password link (only in login mode) */}
               {isLoginMode && (
                 <div className="mt-2 text-right">
@@ -356,16 +452,41 @@ function WelcomeContent() {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#F3F4F6] mb-2">
                   Confirm Password
                 </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required={!isLoginMode}
-                  className="w-full px-4 py-3 border border-[#374151] bg-[#111827] text-[#F3F4F6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-[#7C3AED] transition-colors placeholder-[#6B7280]"
-                  placeholder="Confirm your password"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required={!isLoginMode}
+                    className="w-full px-4 py-3 border border-[#374151] bg-[#111827] text-[#F3F4F6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-[#7C3AED] transition-colors placeholder-[#6B7280]"
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showConfirmPassword ? (
+                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.96 9.96 0 011.563-2.037L5.1 10.9l2.775 2.775a3 3 0 002.12.875H17.25" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.825 19.825A10.05 10.05 0 0012 20c4.478 0 8.268-2.943 9.543-7a9.96 9.96 0 00-1.563-2.037L18.9 13.1l-2.775 2.775a3 3 0 01-2.12.875H5.25" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                
+                {/* Confirm Password Hint */}
+                <p className="mt-1 text-xs text-gray-500 flex items-center">
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Type the same password again to confirm
+                </p>
               </div>
             )}
 

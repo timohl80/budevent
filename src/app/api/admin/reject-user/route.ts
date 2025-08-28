@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { EmailService } from '@/lib/email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,8 +49,20 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (userData) {
-        // You can implement email sending here
-        console.log(`User ${userData.email} has been rejected`);
+        console.log(`User ${userData.email} has been rejected, sending notification email...`);
+        
+        // Send rejection email
+        const emailSent = await EmailService.sendRejectionNotification(
+          userData.email, 
+          userData.name,
+          reason
+        );
+        
+        if (emailSent) {
+          console.log(`Rejection email sent successfully to ${userData.email}`);
+        } else {
+          console.error(`Failed to send rejection email to ${userData.email}`);
+        }
       }
     } catch (emailError) {
       console.error('Failed to send rejection email:', emailError);

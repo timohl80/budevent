@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
           {/* Links */}
           <div className="mt-6 text-center space-y-3">
             <Link
-              href="/welcome"
+              href="/auth"
               className="block text-[#60A5FA] hover:text-[#4B89E8] text-sm transition-colors"
             >
               Back to Sign In
@@ -144,7 +144,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center mt-8">
           <p className="text-[#9CA3AF] text-sm">
             Remember your password?{' '}
-            <Link href="/welcome" className="text-[#60A5FA] hover:text-[#4B89E8] transition-colors">
+            <Link href="/auth" className="text-[#60A5FA] hover:text-[#4B89E8] transition-colors">
               Sign in here
             </Link>
           </p>

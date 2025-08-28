@@ -502,7 +502,7 @@ export default function EventDetailPage() {
                 <div className="text-center py-4">
                   <p className="text-gray-600 mb-4">Sign in to RSVP to this event</p>
                   <Link
-                    href="/welcome"
+                    href="/auth"
                     className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
                   >
                     Sign In

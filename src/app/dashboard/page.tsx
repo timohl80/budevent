@@ -83,7 +83,14 @@ export default function DashboardPage() {
     if (!session?.user) return;
     
     try {
-      const userId = (session.user as { id: string }).id;
+      const user = session.user;
+      const userId = (user as any).id || user.email;
+      
+      if (!userId) {
+        console.error('Could not extract user ID for RSVP update');
+        return;
+      }
+      
       await EventsService.rsvpToEvent(eventId, userId, newStatus);
       
       // Refresh the data
@@ -97,11 +104,18 @@ export default function DashboardPage() {
     if (!session?.user) return;
     
     try {
-      const userId = (session.user as { id: string }).id;
+      const user = session.user;
+      const userId = (user as any).id || user.email;
+      
+      if (!userId) {
+        console.error('Could not extract user ID for RSVP cancel');
+        return;
+      }
+      
       await EventsService.rsvpToEvent(eventId, userId, 'not_going');
       
       // Refresh the data
-      loadUserData();
+      await loadUserData();
     } catch (error) {
       console.error('Failed to cancel RSVP:', error);
     }
@@ -110,7 +124,7 @@ export default function DashboardPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/welcome');
+              router.push('/auth');
     }
   }, [status, router]);
 
