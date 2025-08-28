@@ -173,6 +173,7 @@ export default function DashboardPage() {
           onRSVPUpdate={handleRSVPUpdate}
           onRSVPCancel={handleRSVPCancel}
           onRefresh={loadUserData}
+          onTabChange={setActiveTab}
         />
       </div>
     </main>
