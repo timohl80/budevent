@@ -27,6 +27,7 @@ export default function EditEventPage() {
     capacity: '',
     isPublic: true,
     status: 'active' as 'active' | 'cancelled' | 'completed',
+    externalLink: '',
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
@@ -60,6 +61,7 @@ export default function EditEventPage() {
           capacity: currentEvent.capacity?.toString() || '',
           isPublic: currentEvent.isPublic,
           status: currentEvent.status,
+          externalLink: currentEvent.externalLink || '',
         });
         setUploadedImageUrl(currentEvent.imageUrl || '');
       } catch (err) {
@@ -144,8 +146,25 @@ export default function EditEventPage() {
     setError(null);
 
     try {
-      // Convert local datetime to ISO string
-      const isoDateTime = new Date(formData.startsAt).toISOString();
+      // Convert local datetime to ISO string while preserving local time
+      // This prevents timezone conversion issues
+      const localDateTime = new Date(formData.startsAt);
+      
+      // Create a new date object that preserves the local time
+      // by manually constructing the ISO string without timezone conversion
+      const year = localDateTime.getFullYear();
+      const month = String(localDateTime.getMonth() + 1).padStart(2, '0');
+      const day = String(localDateTime.getDate()).padStart(2, '0');
+      const hours = String(localDateTime.getHours()).padStart(2, '0');
+      const minutes = String(localDateTime.getMinutes()).padStart(2, '0');
+      const seconds = String(localDateTime.getSeconds()).padStart(2, '0');
+      
+      // Create ISO string in local time (no timezone conversion)
+      const isoDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+      
+      console.log('Local datetime input:', formData.startsAt);
+      console.log('Local datetime object:', localDateTime);
+      console.log('Converted datetime (preserved local time):', isoDateTime);
       
       // Update the event
       await EventsService.updateEvent(eventId, {
@@ -157,6 +176,7 @@ export default function EditEventPage() {
         capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
         isPublic: formData.isPublic,
         status: formData.status,
+        externalLink: formData.externalLink,
       });
 
       // Redirect back to events page
@@ -342,6 +362,22 @@ export default function EditEventPage() {
               <option value="cancelled">Cancelled</option>
               <option value="completed">Completed</option>
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="externalLink" className="block text-sm font-medium text-[#2D3436]">
+              External Link
+            </label>
+            <input
+              type="url"
+              id="externalLink"
+              name="externalLink"
+              value={formData.externalLink}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+              placeholder="https://example.com"
+            />
+            <p className="text-sm text-[#2D3436] opacity-70">Optional: Add an external link for more information</p>
           </div>
 
           <div className="space-y-2">

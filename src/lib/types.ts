@@ -14,6 +14,7 @@ export interface EventLite {
   userId: string;
   organizerName?: string;
   organizerEmail?: string;
+  externalLink?: string; // URL to external event page
 }
 
 // Type for creating events (without id and userId)
@@ -26,6 +27,7 @@ export interface CreateEventData {
   capacity?: number;
   isPublic: boolean;
   status: 'active' | 'cancelled' | 'completed';
+  externalLink?: string; // URL to external event page
 }
 
 export interface EventRSVP {
@@ -73,6 +75,7 @@ export interface Database {
           capacity: number | null;
           is_public: boolean;
           status: string;
+          external_link: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -87,6 +90,7 @@ export interface Database {
           capacity?: number | null;
           is_public?: boolean;
           status?: string;
+          external_link?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -101,6 +105,7 @@ export interface Database {
           capacity?: number | null;
           is_public?: boolean;
           status?: string;
+          external_link?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -23,6 +23,7 @@ function CreateEventForm() {
     imageUrl: '',
     capacity: '',
     isPublic: true,
+    externalLink: '',
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [tempEventId, setTempEventId] = useState<string>('');
@@ -80,9 +81,25 @@ function CreateEventForm() {
     console.log('User ID:', (session?.user as any)?.id);
     console.log('Form data:', formData);
 
-    // Convert local datetime to ISO string
-    const isoDateTime = new Date(formData.startsAt).toISOString();
-    console.log('Converted datetime:', isoDateTime);
+    // Convert local datetime to ISO string while preserving local time
+    // This prevents timezone conversion issues
+    const localDateTime = new Date(formData.startsAt);
+    
+    // Create a new date object that preserves the local time
+    // by manually constructing the ISO string without timezone conversion
+    const year = localDateTime.getFullYear();
+    const month = String(localDateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(localDateTime.getDate()).padStart(2, '0');
+    const hours = String(localDateTime.getHours()).padStart(2, '0');
+    const minutes = String(localDateTime.getMinutes()).padStart(2, '0');
+    const seconds = String(localDateTime.getSeconds()).padStart(2, '0');
+    
+    // Create ISO string in local time (no timezone conversion)
+    const isoDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+    
+    console.log('Local datetime input:', formData.startsAt);
+    console.log('Local datetime object:', localDateTime);
+    console.log('Converted datetime (preserved local time):', isoDateTime);
     
     try {
           // Add the new event to Supabase
@@ -95,6 +112,7 @@ function CreateEventForm() {
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
       isPublic: formData.isPublic,
       status: 'active' as const,
+      externalLink: formData.externalLink || undefined,
     }, (session.user as any).id);
       
       console.log('Event created successfully');
@@ -226,6 +244,23 @@ function CreateEventForm() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
                   placeholder="Where will your event take place?"
                 />
+              </div>
+
+              {/* External Link */}
+              <div className="space-y-3">
+                <label htmlFor="externalLink" className="block text-sm font-semibold text-gray-700">
+                  External Event Link
+                </label>
+                <input
+                  type="url"
+                  id="externalLink"
+                  name="externalLink"
+                  value={formData.externalLink}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                  placeholder="https://example.com/event-page"
+                />
+                <p className="text-sm text-gray-500">Optional: Link to external event page (Eventbrite, Meetup, etc.)</p>
               </div>
 
               {/* Event Image */}

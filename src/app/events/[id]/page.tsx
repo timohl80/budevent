@@ -301,6 +301,25 @@ export default function EventDetailPage() {
               </div>
             )}
 
+            {/* External Link */}
+            {event.externalLink && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">External Event Page</h2>
+                <a
+                  href={event.externalLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-lg hover:bg-[#F59E0B]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F59E0B] transition-all"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  Visit External Event Page
+                </a>
+                <p className="text-sm text-gray-500 mt-2">This will open in a new tab</p>
+              </div>
+            )}
+
             {/* Event Stats */}
             <div className="flex items-center space-x-6 text-sm text-gray-600 mb-6">
               <div className="flex items-center">

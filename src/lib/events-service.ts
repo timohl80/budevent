@@ -39,6 +39,7 @@ export class EventsService {
       rsvpCount: 0, // Will be computed separately
       commentCount: 0, // Will be computed separately
       userId: row.user_id,
+      externalLink: row.external_link || undefined,
     };
   }
 
@@ -53,6 +54,7 @@ export class EventsService {
       capacity: event.capacity || null,
       is_public: event.isPublic ?? true,
       status: event.status || 'active',
+      external_link: event.externalLink || null,
     };
   }
 
@@ -264,6 +266,7 @@ export class EventsService {
     if (updates.capacity !== undefined) updateData.capacity = updates.capacity || null;
     if (updates.isPublic !== undefined) updateData.is_public = updates.isPublic;
     if (updates.status !== undefined) updateData.status = updates.status;
+    if (updates.externalLink !== undefined) updateData.external_link = updates.externalLink || null;
 
     console.log('Updating event with data:', { id, updateData });
 
