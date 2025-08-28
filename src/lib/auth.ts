@@ -100,24 +100,12 @@ export const authOptions: NextAuthOptions = {
             console.log('User approved, allowing sign-in')
             return true
           } else {
-            // Let's see what users exist in the database
-            console.log('No user found with email:', user.email)
-            const { data: allUsers, error: allUsersError } = await supabase
-              .from('users')
-              .select('email, name, is_approved, role')
-              .limit(10)
-            
-            if (allUsersError) {
-              console.error('Error fetching all users:', allUsersError)
-            } else {
-              console.log('All users in database:', allUsers)
-            }
-            console.log('New Google user, creating account...')
-            // New Google user, create account
+            // New Google user - require approval instead of auto-approving
+            console.log('New Google user, creating account with pending approval...')
             console.log('Attempting to insert user with data:', {
               email: user.email,
               name: user.name,
-              is_approved: true,
+              is_approved: false, // Changed from true to false
               role: 'USER',
               created_at: new Date().toISOString(),
               password_hash: null,
@@ -127,15 +115,16 @@ export const authOptions: NextAuthOptions = {
             let userData: any = {
               email: user.email,
               name: user.name,
-              is_approved: true,
+              is_approved: false, // Changed from true to false
               role: 'USER',
+              provider: 'google', // Add provider information
             }
             
             // Only add optional fields if they exist
             if (user.email) userData.email = user.email
             if (user.name) userData.name = user.name
             
-            console.log('Attempting to insert user with minimal data:', userData)
+            console.log('Attempting to insert user with pending approval:', userData)
             
             const { data: newUser, error: insertError } = await supabase
               .from('users')
@@ -148,8 +137,9 @@ export const authOptions: NextAuthOptions = {
               console.error('Error details:', insertError.message, insertError.details, insertError.hint)
               return false
             }
-            console.log('Google user created successfully:', newUser)
-            return true
+            console.log('Google user created with pending approval:', newUser)
+            // Don't allow sign-in until approved
+            throw new Error('Account created successfully! Please wait for admin approval before logging in.')
           }
         } catch (error) {
           console.error('Google sign-in error:', error)

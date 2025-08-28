@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
         password_hash: passwordHash,
         is_approved: false, // New users start as pending approval
         role: 'USER',
+        provider: 'email', // Add provider information
       })
       .select('id, name, email, created_at')
       .single()
