@@ -90,6 +90,11 @@ export class EmailService {
    * Send RSVP confirmation email to user
    */
   static async sendRSVPConfirmation(data: EventEmailData): Promise<boolean> {
+    console.log('EmailService.sendRSVPConfirmation called with data:', data);
+    console.log('RESEND_API_KEY available:', !!process.env.RESEND_API_KEY);
+    console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length || 0);
+    console.log('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL);
+    
     if (!resend) {
       console.error('Resend client not initialized - missing API key');
       return false;

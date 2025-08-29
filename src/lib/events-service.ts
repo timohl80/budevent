@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { EventLite, Database, CreateEventData } from './types';
+import { EmailService } from './email-service';
 
 type EventRow = Database['public']['Tables']['events']['Row'];
 type EventInsert = Database['public']['Tables']['events']['Insert'];
@@ -561,6 +562,14 @@ export class EventsService {
           throw new Error('Failed to create RSVP');
         }
         console.log('New RSVP created successfully');
+        
+        // Send confirmation email for new RSVPs
+        try {
+          await this.sendRSVPEmail(eventId, userId, status);
+        } catch (emailError) {
+          console.error('Failed to send RSVP confirmation email:', emailError);
+          // Don't fail the RSVP if email fails
+        }
       }
     } catch (error) {
       console.error('RSVP operation failed:', error);
@@ -592,6 +601,91 @@ export class EventsService {
     }
 
     return data || [];
+  }
+
+  // Send RSVP confirmation email
+  private static async sendRSVPEmail(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going'): Promise<void> {
+    try {
+      // Get event details
+      const { data: event } = await supabase
+        .from('events')
+        .select('title, description, starts_at, location, user_id')
+        .eq('id', eventId)
+        .single();
+
+      if (!event) {
+        console.error('Event not found for email:', eventId);
+        return;
+      }
+
+      // Get user details
+      const { data: user } = await supabase
+        .from('users')
+        .select('name, email')
+        .eq('id', userId)
+        .single();
+
+      if (!user) {
+        console.error('User not found for email:', userId);
+        return;
+      }
+
+      // Get organizer details
+      let organizerName = 'Event Organizer';
+      let organizerEmail = 'noreply@budevent.se';
+      
+      if (event.user_id) {
+        const { data: organizer } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', event.user_id)
+          .single();
+        
+        if (organizer) {
+          organizerName = organizer.name || 'Event Organizer';
+          organizerEmail = organizer.email || 'noreply@budevent.se';
+        }
+      }
+
+      // Format event date and time
+      const eventDate = new Date(event.starts_at);
+      const formattedDate = eventDate.toLocaleDateString('sv-SE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const formattedTime = eventDate.toLocaleTimeString('sv-SE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      // Prepare email data
+      const emailData = {
+        eventName: event.title,
+        eventDate: formattedDate,
+        eventTime: formattedTime,
+        eventLocation: event.location || undefined,
+        eventDescription: event.description || undefined,
+        userName: user.name || 'User',
+        userEmail: user.email,
+        eventId: eventId,
+        eventStartISO: event.starts_at,
+        organizerName,
+        organizerEmail
+      };
+
+      // Send email
+      const emailSent = await EmailService.sendRSVPConfirmation(emailData);
+      if (emailSent) {
+        console.log('RSVP confirmation email sent successfully');
+      } else {
+        console.error('Failed to send RSVP confirmation email');
+      }
+    } catch (error) {
+      console.error('Error in sendRSVPEmail:', error);
+    }
   }
 
   // Get RSVP status for a specific user and event
