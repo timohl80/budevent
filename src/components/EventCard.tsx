@@ -164,6 +164,11 @@ export default function EventCard({ event }: EventCardProps) {
           </span>
         </div>
         
+        {/* Share Button - Top Right */}
+        <div className="absolute top-3 right-20 z-10">
+          <ShareButton event={event} compact={true} />
+        </div>
+        
 
       </Link>
       
@@ -274,10 +279,7 @@ export default function EventCard({ event }: EventCardProps) {
           )}
         </div>
         
-        {/* Share Button */}
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <ShareButton event={event} />
-        </div>
+
       </div>
     </article>
   );

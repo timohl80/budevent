@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -35,8 +35,14 @@ export default function EventsPage() {
         console.log('Fetching events from database...');
         const allEvents = await EventsService.getEvents();
         console.log(`Successfully fetched ${allEvents.length} events`);
+        
+        // Sort events by date (earliest first) by default
+        const sortedEvents = [...allEvents].sort((a, b) => 
+          new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+        );
+        
         setEvents(allEvents);
-        setFilteredEvents(allEvents);
+        setFilteredEvents(sortedEvents);
       } catch (error) {
         console.error('Error fetching events:', error);
         // Set empty arrays on error to show proper error state
@@ -62,28 +68,46 @@ export default function EventsPage() {
     );
   }
 
-  const handleFiltersChange = async (filters: SearchFilters) => {
-    // Prevent unnecessary API calls if no meaningful filters are applied
-    const hasActiveFilters = filters.searchQuery || filters.sortBy !== 'date';
+  const handleFiltersChange = useCallback(async (filters: SearchFilters) => {
+    // Check if we have meaningful filters to apply
+    const hasSearchQuery = filters.searchQuery && filters.searchQuery.trim().length > 0;
     
-    if (!hasActiveFilters) {
-      // No filters, show all events immediately
-      setFilteredEvents(events);
-      return;
+    if (hasSearchQuery) {
+      // Only call API for search queries
+      setSearchLoading(true);
+      try {
+        const filtered = await EventsService.getEventsWithFilters(filters);
+        setFilteredEvents(filtered);
+      } catch (error) {
+        console.error('Error applying search filters:', error);
+        // On error, fall back to showing all events
+        setFilteredEvents(events);
+      } finally {
+        setSearchLoading(false);
+      }
+    } else {
+      // For sorting only, do it client-side to prevent flickering
+      const sortedEvents = [...events];
+      
+      switch (filters.sortBy) {
+        case 'date-desc':
+          sortedEvents.sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime());
+          break;
+        case 'title':
+          sortedEvents.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'location':
+          sortedEvents.sort((a, b) => (a.location || '').localeCompare(b.location || ''));
+          break;
+        case 'date':
+        default:
+          sortedEvents.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+          break;
+      }
+      
+      setFilteredEvents(sortedEvents);
     }
-    
-    setSearchLoading(true);
-    try {
-      const filtered = await EventsService.getEventsWithFilters(filters);
-      setFilteredEvents(filtered);
-    } catch (error) {
-      console.error('Error applying filters:', error);
-      // On error, fall back to showing all events
-      setFilteredEvents(events);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+  }, [events]);
 
   return (
     <main className="space-y-12 py-12 bg-[#111827] min-h-screen">

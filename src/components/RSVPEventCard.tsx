@@ -99,6 +99,11 @@ export default function RSVPEventCard({ event, rsvp, onUpdate, onCancel }: RSVPE
               alt={event.title}
               className="w-full h-full object-cover"
             />
+            
+            {/* Share Button - Top Right */}
+            <div className="absolute top-2 right-2 z-10">
+              <ShareButton event={event} compact={true} />
+            </div>
           </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] flex items-center justify-center">
@@ -200,7 +205,6 @@ export default function RSVPEventCard({ event, rsvp, onUpdate, onCancel }: RSVPE
             >
               Cancel RSVP
             </button>
-            <ShareButton event={event} />
             <Link
               href={`/events/${event.id}`}
               className="py-2 px-4 bg-[#60A5FA] text-white rounded-lg text-sm font-medium hover:bg-[#4B89E8] transition-colors"

@@ -219,8 +219,8 @@ export class EventsService {
         .select('*');
 
       // Apply search filter
-      if (filters.searchQuery) {
-        const searchTerm = filters.searchQuery.toLowerCase();
+      if (filters.searchQuery && filters.searchQuery.trim().length > 0) {
+        const searchTerm = filters.searchQuery.toLowerCase().trim();
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%`);
       }
 
@@ -235,41 +235,66 @@ export class EventsService {
         case 'location':
           query = query.order('location', { ascending: true });
           break;
+        case 'date':
         default: // 'date' - earliest first
           query = query.order('starts_at', { ascending: true });
+          break;
       }
 
+      console.log('Executing query with filters:', { searchQuery: filters.searchQuery, sortBy: filters.sortBy });
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching filtered events:', error);
-        throw new Error('Failed to fetch filtered events');
+        console.error('Supabase error fetching filtered events:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw new Error(`Database error: ${error.message || 'Failed to fetch filtered events'}`);
       }
 
       if (!data) {
+        console.log('No data returned from filtered query');
         return [];
       }
 
-      console.log(`Successfully fetched ${data.length} filtered events`);
+      console.log(`Successfully fetched ${data.length} filtered events from database`);
       
       // Get RSVP counts for all events
       const eventsWithCounts = await Promise.all(
         data.map(async (event) => {
-          const rsvpCount = await this.getEventRSVPCount(event.id);
-          const commentCount = await this.getEventCommentCount(event.id);
-          
-          return {
-            ...this.mapRowToEvent(event),
-            rsvpCount,
-            commentCount,
-          };
+          try {
+            const rsvpCount = await this.getEventRSVPCount(event.id);
+            const commentCount = await this.getEventCommentCount(event.id);
+            
+            return {
+              ...this.mapRowToEvent(event),
+              rsvpCount,
+              commentCount,
+            };
+          } catch (countError) {
+            console.error(`Error getting counts for event ${event.id}:`, countError);
+            // Return event with default counts on error
+            return {
+              ...this.mapRowToEvent(event),
+              rsvpCount: 0,
+              commentCount: 0,
+            };
+          }
         })
       );
       
+      console.log(`Successfully processed ${eventsWithCounts.length} events with counts`);
       return eventsWithCounts;
     } catch (err) {
       console.error('Exception during filtered events fetch:', err);
-      throw err;
+      if (err instanceof Error) {
+        throw new Error(`Filtered events fetch failed: ${err.message}`);
+      } else {
+        throw new Error('Unknown error during filtered events fetch');
+      }
     }
   }
 

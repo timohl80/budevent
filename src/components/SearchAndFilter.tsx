@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export interface SearchFilters {
   searchQuery: string;
@@ -19,6 +19,7 @@ export default function SearchAndFilter({ onFiltersChange, isSearching = false }
   });
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const prevFiltersRef = useRef<SearchFilters>(filters);
 
   const sortOptions = [
     { value: 'date', label: 'Date (Earliest First)' },
@@ -28,21 +29,22 @@ export default function SearchAndFilter({ onFiltersChange, isSearching = false }
   ];
 
   useEffect(() => {
-    // Only trigger filters change for non-search filters (sort)
-    // Search is handled separately with debouncing
-    if (filters.sortBy !== 'date') {
+    // Only trigger filters change when filters actually change
+    // This prevents infinite loops and unnecessary re-renders
+    const prevFilters = prevFiltersRef.current;
+    
+    if (filters.sortBy !== prevFilters.sortBy || filters.searchQuery !== prevFilters.searchQuery) {
+      prevFiltersRef.current = filters;
       onFiltersChange(filters);
     }
-  }, [filters.sortBy, onFiltersChange]);
+  }, [filters, onFiltersChange]);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     
-    // If clearing sort and no search query, show all events immediately
-    if (key === 'sortBy' && value === 'date' && !newFilters.searchQuery) {
-      onFiltersChange(newFilters);
-    }
+    // Sort changes are handled by useEffect to ensure consistent behavior
+    // No need to manually trigger onFiltersChange here
   };
 
   // Debounced search to prevent rapid API calls

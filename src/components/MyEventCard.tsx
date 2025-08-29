@@ -100,6 +100,11 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
                 Today!
               </div>
             )}
+            
+            {/* Share Button - Top Right */}
+            <div className="absolute top-2 right-20 z-10">
+              <ShareButton event={event} compact={true} />
+            </div>
           </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] flex items-center justify-center">
@@ -244,10 +249,7 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
           </button>
         </div>
         
-        {/* Share Button */}
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <ShareButton event={event} />
-        </div>
+
       </div>
     </div>
   );
