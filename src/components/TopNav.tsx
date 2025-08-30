@@ -110,6 +110,12 @@ export default function TopNav() {
               >
                 Events
               </Link>
+              <Link 
+                href="/info" 
+                className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+              >
+                Info
+              </Link>
             </>
           ) : null}
           {session && (
