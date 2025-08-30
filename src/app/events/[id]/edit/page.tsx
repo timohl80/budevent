@@ -314,7 +314,7 @@ export default function EditEventPage() {
     }));
   };
 
-  const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleHourChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -322,7 +322,7 @@ export default function EditEventPage() {
     }));
   };
 
-  const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleMinuteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -429,11 +429,13 @@ export default function EditEventPage() {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label className="block text-sm font-medium text-[#2D3436]">
               Start Date & Time * (Swedish Time)
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            
+            {/* Combined Date & Time Picker */}
+            <div className="space-y-4">
               {/* Date Input */}
               <div>
                 <label htmlFor="eventDate" className="block text-sm font-medium text-[#2D3436] mb-2">
@@ -450,89 +452,71 @@ export default function EditEventPage() {
                 />
               </div>
               
-              {/* Time Input */}
+              {/* Time Input - Custom 24-hour Format Picker */}
               <div>
-                <label className="block text-sm font-medium text-[#2D3436] mb-3">
-                  Time (24-hour)
+                <label className="block text-sm font-medium text-[#2D3436] mb-2">
+                  Time (24-hour format)
                 </label>
-                <div className="relative">
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Hour Selector */}
-                    <div className="relative">
-                      <label htmlFor="eventHour" className="block text-xs font-medium text-[#2D3436] mb-2">
-                        Hour
-                      </label>
-                      <select
-                        id="eventHour"
-                        name="eventHour"
-                        required
-                        value={formData.eventHour || ''}
-                        onChange={handleHourChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm bg-white hover:border-gray-400 cursor-pointer appearance-none"
-                      >
-                        <option value="" disabled>Select Hour</option>
-                        {Array.from({ length: 24 }, (_, i) => (
-                          <option key={i} value={String(i).padStart(2, '0')} className="py-2">
-                            {String(i).padStart(2, '0')}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Custom dropdown arrow */}
-                      <div className="absolute right-3 top-8 pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    
-                    {/* Minute Selector */}
-                    <div className="relative">
-                      <label htmlFor="eventMinute" className="block text-xs font-medium text-[#2D3436] mb-2">
-                        Minute
-                      </label>
-                      <select
-                        id="eventMinute"
-                        name="eventMinute"
-                        required
-                        value={formData.eventMinute || ''}
-                        onChange={handleMinuteChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm bg-white hover:border-gray-400 cursor-pointer appearance-none"
-                      >
-                        <option value="" disabled>Select Minute</option>
-                        {Array.from({ length: 60 }, (_, i) => (
-                          <option key={i} value={String(i).padStart(2, '0')} className="py-2">
-                            {String(i).padStart(2, '0')}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Custom dropdown arrow */}
-                      <div className="absolute right-3 top-8 pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Hour Input */}
+                  <div>
+                    <label htmlFor="eventHour" className="block text-xs font-medium text-[#2D3436] opacity-70 mb-2">
+                      Hour (00-23)
+                    </label>
+                    <input
+                      type="number"
+                      id="eventHour"
+                      name="eventHour"
+                      min="0"
+                      max="23"
+                      required
+                      value={formData.eventHour || ''}
+                      onChange={handleHourChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg"
+                      placeholder="14"
+                    />
                   </div>
                   
-                  {/* Time Preview */}
-                  {formData.eventHour && formData.eventMinute && (
-                    <div className="mt-3 p-3 bg-[#A29BFE]/10 border border-[#A29BFE]/20 rounded-lg">
-                      <div className="flex items-center justify-center space-x-2">
-                        <svg className="w-5 h-5 text-[#A29BFE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-lg font-semibold text-[#A29BFE]">
-                          {formData.eventHour}:{formData.eventMinute}
-                        </span>
-                        <span className="text-sm text-[#A29BFE]/70">Swedish Time</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* Minute Input */}
+                  <div>
+                    <label htmlFor="eventMinute" className="block text-xs font-medium text-[#2D3436] opacity-70 mb-2">
+                      Minute (00-59)
+                    </label>
+                    <input
+                      type="number"
+                      id="eventMinute"
+                      name="eventMinute"
+                      min="0"
+                      max="23"
+                      required
+                      value={formData.eventMinute || ''}
+                      onChange={handleMinuteChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg"
+                      placeholder="30"
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-[#2D3436] opacity-70 mt-2">Select hour (00-23) and minute (00-59)</p>
+                
+                {/* Time Preview */}
+                {formData.eventHour && formData.eventMinute && (
+                  <div className="mt-3 p-3 bg-[#A29BFE]/10 border border-[#A29BFE]/20 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg className="w-5 h-5 text-[#A29BFE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-lg font-semibold text-[#A29BFE]">
+                        {formData.eventHour.padStart(2, '0')}:{formData.eventMinute.padStart(2, '0')}
+                      </span>
+                      <span className="text-sm text-[#A29BFE]/70">Swedish Time</span>
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-sm text-[#2D3436] opacity-70 mt-2">
+                  Enter time in 24-hour format (e.g., 14 for 2 PM, 23 for 11 PM)
+                </p>
               </div>
             </div>
-            <p className="text-sm text-[#2D3436] opacity-70">All times are in Swedish time (CET/CEST) - 24-hour format</p>
           </div>
 
           <div className="space-y-2">
@@ -654,7 +638,7 @@ export default function EditEventPage() {
                   onChange={handleRadioChange}
                   className="mr-2 text-[#A29BFE] focus:ring-[#A29BFE]"
                 />
-                <span className="text-[#2D3436]">Private Event</span>
+                <span className="text-[#2D3436]">Private Event (Only I can see)</span>
               </label>
             </div>
           </div>

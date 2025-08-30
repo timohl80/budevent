@@ -524,7 +524,7 @@ export default function EventDetailPage() {
               <div className="border-t border-[#7C3AED]/20 pt-6">
                 <Link
                   href={`/events/${event.id}/edit`}
-                  className="inline-flex items-center px-6 py-3 text-base font-medium text-[#6D28D9] bg-[#7C3AED] bg-opacity-15 border border-[#7C3AED] border-opacity-30 rounded-lg hover:bg-opacity-25 hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-all"
+                  className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B5CF6] transition-all rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

@@ -16,6 +16,7 @@ export default function EventsPage() {
   const [filteredEvents, setFilteredEvents] = useState<EventLite[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
 
   // Redirect unauthenticated users to welcome page
   useEffect(() => {
@@ -42,7 +43,15 @@ export default function EventsPage() {
         );
         
         setEvents(allEvents);
-        setFilteredEvents(sortedEvents);
+        
+        // Apply active tab filter by default (show active events)
+        const activeEvents = sortedEvents.filter(event => {
+          const eventDate = new Date(event.startsAt);
+          const now = new Date();
+          return eventDate >= now;
+        });
+        
+        setFilteredEvents(activeEvents);
       } catch (error) {
         console.error('Error fetching events:', error);
         // Set empty arrays on error to show proper error state
@@ -77,7 +86,13 @@ export default function EventsPage() {
       setSearchLoading(true);
       try {
         const filtered = await EventsService.getEventsWithFilters(filters);
-        setFilteredEvents(filtered);
+        // Apply active/past filter to search results
+        const filteredByTab = filtered.filter(event => {
+          const eventDate = new Date(event.startsAt);
+          const now = new Date();
+          return activeTab === 'active' ? eventDate >= now : eventDate < now;
+        });
+        setFilteredEvents(filteredByTab);
       } catch (error) {
         console.error('Error applying search filters:', error);
         // On error, fall back to showing all events
@@ -105,9 +120,34 @@ export default function EventsPage() {
           break;
       }
       
-      setFilteredEvents(sortedEvents);
+      // Apply active/past filter
+      const filteredByTab = sortedEvents.filter(event => {
+        const eventDate = new Date(event.startsAt);
+        const now = new Date();
+        return activeTab === 'active' ? eventDate >= now : eventDate < now;
+      });
+      
+      setFilteredEvents(filteredByTab);
     }
-  }, [events]);
+  }, [events, activeTab]);
+
+  const handleTabChange = (tab: 'active' | 'past') => {
+    setActiveTab(tab);
+    
+    // Re-filter events based on new tab
+    const filteredByTab = events.filter(event => {
+      const eventDate = new Date(event.startsAt);
+      const now = new Date();
+      return tab === 'active' ? eventDate >= now : eventDate < now;
+    });
+    
+    // Apply current sorting
+    const sortedEvents = [...filteredByTab];
+    // You could store the current sort in state if needed
+    sortedEvents.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+    
+    setFilteredEvents(sortedEvents);
+  };
 
   return (
     <main className="space-y-12 py-12 bg-[#111827] min-h-screen">
@@ -137,6 +177,38 @@ export default function EventsPage() {
       <section className="w-full px-2 sm:px-4 lg:px-6">
         <SearchAndFilter onFiltersChange={handleFiltersChange} />
         
+        {/* Active/Past Events Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-gray-800 rounded-lg p-1 flex">
+            <button
+              onClick={() => handleTabChange('active')}
+              className={`px-6 py-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'active'
+                  ? 'bg-[#3B82F6] text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+              </svg>
+              Active Events
+            </button>
+            <button
+              onClick={() => handleTabChange('past')}
+              className={`px-6 py-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'past'
+                  ? 'bg-[#3B82F6] text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Past Events
+            </button>
+          </div>
+        </div>
+        
         {/* Events Display */}
         {loading ? (
           <div className="text-center py-12">
@@ -152,7 +224,7 @@ export default function EventsPage() {
           <>
             <div className="mb-8 text-center">
               <p className="text-lg text-[#9CA3AF]">
-                Found {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
+                Found {filteredEvents.length} {activeTab === 'active' ? 'active' : 'past'} event{filteredEvents.length !== 1 ? 's' : ''}
               </p>
             </div>
             <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -168,13 +240,17 @@ export default function EventsPage() {
             <p className="text-[#9CA3AF] mb-6">
               {events.length === 0 
                 ? "There are no events in the database yet. Be the first to create an event!"
-                : "No events match your current search criteria."
+                : activeTab === 'active' 
+                  ? "No active events match your current search criteria."
+                  : "No past events match your current search criteria."
               }
             </p>
             <p className="text-[#6B7280] text-sm">
               {events.length === 0 
                 ? "Create your first event to get started!"
-                : "Try adjusting your search terms or filters to find more events."
+                : activeTab === 'active'
+                  ? "Try switching to Past Events or adjusting your search terms."
+                  : "Try switching to Active Events or adjusting your search terms."
               }
             </p>
             {events.length === 0 && (
