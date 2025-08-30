@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import ChatInterface from '@/components/ChatInterface';
+import { isAdmin, AdminAccessDenied } from '@/lib/admin-utils';
 
 interface Message {
   id: string;
@@ -13,7 +14,24 @@ interface Message {
 }
 
 export default function InfoPageContent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
+  // Show loading while checking session
+  if (status === 'loading') {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-[#111827] to-[#1F2937] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-300">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Show access denied if not authenticated or not admin
+  if (!session || !session.user || !isAdmin(session.user)) {
+    return <AdminAccessDenied />;
+  }
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',

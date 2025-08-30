@@ -8,6 +8,7 @@ import { EventsService } from '@/lib/events-service';
 import { EventLite } from '@/lib/types';
 import { SimpleStorageService } from '@/lib/simple-storage-service';
 import ImageUpload from '@/components/ImageUpload';
+import WeatherForecast from '@/components/WeatherForecast';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function EditEventPage() {
     eventMinute: '',
   });
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
+  const [showWeatherForecast, setShowWeatherForecast] = useState(false);
 
   const eventId = params.id as string;
 
@@ -532,6 +534,83 @@ export default function EditEventPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
               placeholder="Enter event location"
             />
+            <p className="text-sm text-[#2D3436] opacity-70">
+              Enter a Swedish city name to see weather forecast and pick the best date for your event
+            </p>
+            
+            {/* Weather Forecast Toggle */}
+            {formData.location && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowWeatherForecast(!showWeatherForecast)}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                  </svg>
+                  {showWeatherForecast ? 'Hide Weather Forecast' : 'Show Weather Forecast'}
+                </button>
+              </div>
+            )}
+            
+            {/* Weather Forecast Component */}
+            {formData.location && showWeatherForecast && (
+              <div className="mt-4">
+                <WeatherForecast
+                  location={formData.location}
+                  onDateSelect={(date) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      eventDate: date
+                    }));
+                    setShowWeatherForecast(false);
+                  }}
+                  selectedDate={formData.eventDate}
+                />
+              </div>
+            )}
+            
+            {/* Selected Date Summary */}
+            {formData.eventDate && !showWeatherForecast && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-medium text-green-700">Date Selected ✓</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowWeatherForecast(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Change Date
+                  </button>
+                </div>
+                <div className="mt-2 text-sm text-green-600">
+                  {(() => {
+                    try {
+                      const date = new Date(formData.eventDate);
+                      return date.toLocaleDateString('sv-SE', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      });
+                    } catch {
+                      // Fallback for Safari
+                      const [year, month, day] = formData.eventDate.split('-');
+                      const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
+                      const weekdays = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
+                      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                      return `${weekdays[date.getDay()]} ${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`;
+                    }
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

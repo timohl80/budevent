@@ -12,7 +12,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user is admin (you can implement your own admin check logic)
-    const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
+    const adminEmails = ['timohl@hotmail.com'];
     if (!adminEmails.includes(session.user.email!)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

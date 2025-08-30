@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut, getSession } from 'next-auth/react';
+import { isAdmin } from '@/lib/admin-utils';
 
 export default function TopNav() {
   const { data: session } = useSession();
@@ -73,11 +74,7 @@ export default function TopNav() {
     }
   };
 
-  // Check if user is admin
-  const isAdmin = (user: { email?: string | null }) => {
-    const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
-          return user.email ? adminEmails.includes(user.email) : false;
-  };
+
 
   return (
     <nav className="relative bg-[#111827] border-b border-[#374151] shadow-lg">
@@ -110,12 +107,14 @@ export default function TopNav() {
               >
                 Events
               </Link>
-              <Link 
-                href="/info" 
-                className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
-              >
-                Info
-              </Link>
+              {session.user && isAdmin(session.user) && (
+                <Link 
+                  href="/info" 
+                  className="text-[#F3F4F6] hover:text-[#DB2777] transition-colors"
+                >
+                  Info
+                </Link>
+              )}
             </>
           ) : null}
           {session && (
@@ -213,6 +212,14 @@ export default function TopNav() {
                 >
                   Events
                 </Link>
+                {session.user && isAdmin(session.user) && (
+                  <Link
+                    href="/info"
+                    className="block px-3 py-2 text-[#F3F4F6] hover:text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+                  >
+                    Info
+                  </Link>
+                )}
               </>
             ) : null}
             {session && (

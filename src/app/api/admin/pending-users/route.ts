@@ -18,7 +18,7 @@ export async function GET() {
 
     // Check if user is admin (you'll need to implement this check)
     // For now, let's check if the user email is in a list of admin emails
-    const adminEmails = ['admin@budevent.com', 'timohl@hotmail.com'];
+    const adminEmails = ['timohl@hotmail.com'];
     if (!adminEmails.includes(session.user.email || '')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

@@ -7,6 +7,7 @@ import { EventLite } from '@/lib/types';
 import { EventsService } from '@/lib/events-service';
 import ShareButton from '@/components/ShareButton';
 import Link from 'next/link';
+import { SMHIWeatherService, WeatherData } from '@/lib/weather-service';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -19,6 +20,8 @@ export default function EventDetailPage() {
   const [rsvps, setRsvps] = useState<any[]>([]);
   const [isLoadingRsvps, setIsLoadingRsvps] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
 
   const eventId = params.id as string;
 
@@ -27,6 +30,36 @@ export default function EventDetailPage() {
       loadEvent();
     }
   }, [eventId]);
+
+  // Refetch weather data when event changes
+  useEffect(() => {
+    if (event && event.location) {
+      fetchWeatherData(event.location, event.startsAt);
+    }
+  }, [event?.location, event?.startsAt]);
+
+  const fetchWeatherData = async (location: string, eventDate: string) => {
+    try {
+      setWeatherLoading(true);
+      const coordinates = await SMHIWeatherService.getCoordinatesFromLocation(location);
+      
+      if (coordinates) {
+        const forecast = await SMHIWeatherService.getForecast(coordinates);
+        const eventDateObj = new Date(eventDate);
+        const eventDateString = eventDateObj.toISOString().split('T')[0];
+        
+        // Find weather data for the event date
+        const eventWeather = forecast.find(day => day.date === eventDateString);
+        if (eventWeather) {
+          setWeatherData(eventWeather);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch weather data:', error);
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
 
   const loadEvent = async () => {
     try {
@@ -53,6 +86,11 @@ export default function EventDetailPage() {
         }
         console.log('Loading event RSVPs...');
         loadEventRSVPs(foundEvent.id);
+        
+        // Load weather data for the event
+        if (foundEvent.location) {
+          fetchWeatherData(foundEvent.location, foundEvent.startsAt);
+        }
       } else {
         console.error('Event not found, redirecting to events page');
         setError('Event not found');
@@ -377,13 +415,33 @@ export default function EventDetailPage() {
                 
                 {/* Date and Time - Stacked on mobile */}
                 <div className="mb-3">
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-5 h-5 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="font-medium">{formatDateTime(event.startsAt)}</span>
+                  <div className="flex items-center justify-between text-gray-600">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                        <span className="font-medium">{formatDateTime(event.startsAt)}</span>
+                      </div>
                     </div>
+                    
+                    {/* Weather Icon */}
+                    {weatherData && (
+                      <div className="flex items-center space-x-2 text-sm">
+                        <span className="text-2xl" title={`${weatherData.description}: ${weatherData.temperature.max}°C, ${weatherData.precipitation.chance}% rain`}>
+                          {weatherData.weatherIcon}
+                        </span>
+                        <span className="text-gray-500 font-medium">
+                          {weatherData.temperature.max}°
+                        </span>
+                      </div>
+                    )}
+                    {weatherLoading && (
+                      <div className="flex items-center space-x-2 text-sm text-gray-400">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b border-gray-400"></div>
+                        <span>Loading weather...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
