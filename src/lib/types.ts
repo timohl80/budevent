@@ -15,6 +15,7 @@ export interface EventLite {
   organizerName?: string;
   organizerEmail?: string;
   externalLink?: string; // URL to external event page
+  externalLinkTitle?: string; // Custom title for external link
 }
 
 // Type for creating events (without id and userId)
@@ -28,6 +29,7 @@ export interface CreateEventData {
   isPublic: boolean;
   status: 'active' | 'cancelled' | 'completed';
   externalLink?: string; // URL to external event page
+  externalLinkTitle?: string; // Custom title for external link
 }
 
 export interface EventRSVP {
@@ -77,6 +79,7 @@ export interface Database {
           is_public: boolean;
           status: string;
           external_link: string | null;
+          external_link_title: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -92,12 +95,14 @@ export interface Database {
           is_public?: boolean;
           status?: string;
           external_link?: string | null;
+          external_link_title?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           title?: string;
+          external_link_title?: string | null;
           description?: string | null;
           starts_at?: string;
           location?: string | null;

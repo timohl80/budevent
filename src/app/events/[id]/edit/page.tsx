@@ -28,6 +28,7 @@ export default function EditEventPage() {
     isPublic: true,
     status: 'active' as 'active' | 'cancelled' | 'completed',
     externalLink: '',
+    externalLinkTitle: '',
     eventDate: '',
     eventTime: '',
     eventHour: '',
@@ -79,6 +80,7 @@ export default function EditEventPage() {
           isPublic: currentEvent.isPublic,
           status: currentEvent.status,
           externalLink: currentEvent.externalLink || '',
+          externalLinkTitle: currentEvent.externalLinkTitle || '',
           eventDate: new Date(currentEvent.startsAt).toISOString().slice(0, 10),
           eventTime: new Date(currentEvent.startsAt).toISOString().slice(11, 16),
           eventHour: new Date(currentEvent.startsAt).getHours().toString(),
@@ -221,6 +223,7 @@ export default function EditEventPage() {
           isPublic: formData.isPublic,
           status: formData.status,
           externalLink: formData.externalLink,
+          externalLinkTitle: formData.externalLinkTitle,
         }
       });
 
@@ -247,6 +250,7 @@ export default function EditEventPage() {
           is_public: formData.isPublic,
           status: formData.status,
           external_link: formData.externalLink,
+          external_link_title: formData.externalLinkTitle,
         })
         .eq('id', eventId)
         .select()
@@ -591,6 +595,22 @@ export default function EditEventPage() {
               <option value="cancelled">Cancelled</option>
               <option value="completed">Completed</option>
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="externalLinkTitle" className="block text-sm font-medium text-[#2D3436]">
+              External Link Title
+            </label>
+            <input
+              type="text"
+              id="externalLinkTitle"
+              name="externalLinkTitle"
+              value={formData.externalLinkTitle}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
+              placeholder="e.g., Buy Tickets, Join Facebook Event, Register Here"
+            />
+            <p className="text-sm text-[#2D3436] opacity-70">Optional: Custom title for the external link button</p>
           </div>
 
           <div className="space-y-2">

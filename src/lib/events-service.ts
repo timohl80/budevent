@@ -50,6 +50,7 @@ export class EventsService {
       commentCount: 0, // Will be computed separately
       userId: row.user_id || '', // Convert null to empty string to prevent issues
       externalLink: row.external_link || undefined,
+      externalLinkTitle: row.external_link_title || undefined,
     };
   }
 
@@ -65,6 +66,7 @@ export class EventsService {
       is_public: event.isPublic ?? true,
       status: event.status || 'active',
       external_link: event.externalLink || null,
+      external_link_title: event.externalLinkTitle || null,
     };
   }
 

@@ -24,6 +24,7 @@ function CreateEventForm() {
     capacity: '',
     isPublic: true,
     externalLink: '',
+    externalLinkTitle: '',
     eventDate: '', // Added for date input
     eventTime: '', // Added for time input
     eventHour: '', // Added for hour input
@@ -98,11 +99,12 @@ function CreateEventForm() {
       description: formData.description,
       startsAt: `${date}T${time}`, // Combine date and time
       location: formData.location,
+      externalLink: formData.externalLink || undefined,
+      externalLinkTitle: formData.externalLinkTitle || undefined,
       imageUrl: uploadedImageUrl || undefined,
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
       isPublic: formData.isPublic,
       status: 'active' as const,
-      externalLink: formData.externalLink || undefined,
     }, (session.user as any).id);
       
       console.log('Event created successfully');
@@ -349,6 +351,23 @@ function CreateEventForm() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
                   placeholder="Where will your event take place?"
                 />
+              </div>
+
+              {/* External Link Title */}
+              <div className="space-y-3">
+                <label htmlFor="externalLinkTitle" className="block text-sm font-semibold text-gray-700">
+                  External Link Title
+                </label>
+                <input
+                  type="text"
+                  id="externalLinkTitle"
+                  name="externalLinkTitle"
+                  value={formData.externalLinkTitle}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
+                  placeholder="e.g., Buy Tickets, Join Facebook Event, Register Here"
+                />
+                <p className="text-sm text-gray-500">Optional: Custom title for the external link button</p>
               </div>
 
               {/* External Link */}

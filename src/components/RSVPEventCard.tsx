@@ -152,6 +152,23 @@ export default function RSVPEventCard({ event, rsvp, onUpdate, onCancel }: RSVPE
           </p>
         )}
         
+        {/* External Link - Small text link below description */}
+        {event.externalLink && (
+          <div className="mb-4">
+            <a
+              href={event.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-sm text-[#F59E0B] hover:text-[#D97706] transition-colors"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              {event.externalLinkTitle || 'External Link'}
+            </a>
+          </div>
+        )}
+        
         {/* RSVP'd on */}
         <div className="text-sm text-gray-500 mb-4 pb-3 border-b border-gray-200">
           RSVP'd on {formatDate(rsvp.createdAt)}
@@ -212,19 +229,7 @@ export default function RSVPEventCard({ event, rsvp, onUpdate, onCancel }: RSVPE
               View Event Details
             </Link>
             
-            {/* External Link Button */}
-            {event.externalLink && (
-              <a
-                href={event.externalLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="py-2 px-3 bg-[#F59E0B] text-white border border-[#F59E0B] rounded-lg text-sm font-medium hover:bg-[#D97706] transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-            )}
+
           </div>
         </div>
       </div>

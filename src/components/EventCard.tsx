@@ -209,6 +209,23 @@ export default function EventCard({ event }: EventCardProps) {
           </p>
         )}
         
+        {/* External Link - Small text link below description */}
+        {event.externalLink && (
+          <div className="mb-3">
+            <a
+              href={event.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-sm text-[#F59E0B] hover:text-[#D97706] transition-colors"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              {event.externalLinkTitle || 'External Link'}
+            </a>
+          </div>
+        )}
+        
         {/* Quick RSVP Button */}
         {session?.user && !isOwner && event.status === 'active' && !rsvpStatus && (
           <div className="mb-3">
@@ -250,20 +267,7 @@ export default function EventCard({ event }: EventCardProps) {
             View Details
           </Link>
           
-          {/* External Link Button */}
-          {event.externalLink && (
-            <a
-              href={event.externalLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-md hover:bg-[#F59E0B]/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F59E0B] transition-colors ml-2"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              External Link
-            </a>
-          )}
+
           
           {/* Edit button for event owner */}
           {isOwner && (
