@@ -209,6 +209,22 @@ export default function EventDetailPage() {
           // Calculate end time (default to 2 hours after start if not specified)
           const endTime = event.endsAt ? new Date(event.endsAt) : new Date(eventDate.getTime() + 2 * 60 * 60 * 1000);
           
+          // Debug: Log session user data
+          console.log('Session user data for email:', {
+            name: (session.user as any).name,
+            email: (session.user as any).email,
+            provider: (session.user as any).provider,
+            id: (session.user as any).id,
+            fullUser: session.user
+          });
+          
+          // Check if user email is available
+          if (!(session.user as any).email) {
+            console.error('No user email found in session! Cannot send confirmation email.');
+            alert('⚠️ RSVP confirmed but no email found. Please check your account settings.');
+            return;
+          }
+          
           const emailData = {
             eventName: event.title,
             eventDate: eventDate.toLocaleDateString('en-US', {
@@ -233,6 +249,9 @@ export default function EventDetailPage() {
             organizerEmail: event.organizerEmail || 'noreply@budevent.com'
           };
           
+          // Debug: Log email data being sent
+          console.log('Email data being sent:', emailData);
+          
           // Send email via API route
           const response = await fetch('/api/send-rsvp-email', {
             method: 'POST',
@@ -243,11 +262,15 @@ export default function EventDetailPage() {
           });
           
           if (response.ok) {
-            console.log('Confirmation email sent successfully');
+            const result = await response.json();
+            console.log('Confirmation email sent successfully:', result);
             // Show success message to user
             alert('✅ RSVP confirmed! Check your email for calendar details.');
           } else {
-            console.error('Failed to send confirmation email');
+            const errorResult = await response.json();
+            console.error('Failed to send confirmation email:', errorResult);
+            // Show error to user but don't fail the RSVP
+            alert('⚠️ RSVP confirmed but email failed. Check console for details.');
           }
         } catch (emailError) {
           console.error('Failed to send confirmation email:', emailError);

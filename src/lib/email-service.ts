@@ -94,6 +94,13 @@ export class EmailService {
     console.log('RESEND_API_KEY available:', !!process.env.RESEND_API_KEY);
     console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY?.length || 0);
     console.log('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL);
+    console.log('RESEND_FROM_EMAIL value:', process.env.RESEND_FROM_EMAIL);
+    
+    // Validate email data
+    if (!data.userEmail || !data.userEmail.includes('@')) {
+      console.error('Invalid user email:', data.userEmail);
+      return false;
+    }
     
     if (!resend) {
       console.error('Resend client not initialized - missing API key');
