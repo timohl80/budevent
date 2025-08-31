@@ -108,33 +108,55 @@ export class EmailService {
     }
 
     try {
-      // Generate calendar data
+      // Validate that we have a valid ISO date for calendar functionality
+      if (!data.eventStartISO || isNaN(new Date(data.eventStartISO).getTime())) {
+        console.error('Invalid eventStartISO date:', data.eventStartISO);
+        // Continue without calendar functionality rather than failing completely
+      }
+
+      // Generate calendar data - use ISO dates for calendar functionality
       const event = {
         title: data.eventName,
         description: data.eventDescription,
-        startsAt: data.eventStartISO || data.eventDate,
-        endsAt: data.eventEndISO || data.eventDate,
+        startsAt: data.eventStartISO || new Date().toISOString(), // Fallback to current time if no ISO date
+        endsAt: data.eventEndISO || new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(), // Default 2 hours later
         location: data.eventLocation,
         organizerName: data.organizerName,
         organizerEmail: data.organizerEmail
       };
 
-      const icsContent = generateICSContent(event);
-      const calendarLinks = generateCalendarLinks(event);
+      let icsContent = '';
+      let calendarLinks: ReturnType<typeof generateCalendarLinks> | undefined = undefined;
+      
+      try {
+        icsContent = generateICSContent(event);
+        calendarLinks = generateCalendarLinks(event);
+      } catch (calendarError) {
+        console.error('Error generating calendar content:', calendarError);
+        // Continue without calendar functionality
+        icsContent = '';
+        calendarLinks = undefined;
+      }
 
-      const { data: result, error } = await resend.emails.send({
+      const emailData: any = {
         from: 'noreply@budevent.se', // Always use noreply@budevent.se for consistency
         to: [data.userEmail],
         subject: `You're signed up for ${data.eventName}! 🎉`,
         html: this.generateRSVPEmailHTML(data, calendarLinks),
-        attachments: [
+      };
+
+      // Only add calendar attachment if we have valid ICS content
+      if (icsContent) {
+        emailData.attachments = [
           {
             filename: `${data.eventName.replace(/[^a-zA-Z0-9]/g, '_')}.ics`,
             content: Buffer.from(icsContent, 'utf-8').toString('base64'),
             contentType: 'text/calendar'
           }
-        ]
-      });
+        ];
+      }
+
+      const { data: result, error } = await resend.emails.send(emailData);
 
       if (error) {
         console.error('Error sending RSVP confirmation email:', error);
