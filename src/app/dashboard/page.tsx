@@ -210,6 +210,32 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/events/new')}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#7C3AED] bg-[#7C3AED]/10 border border-[#7C3AED]/20 rounded-lg hover:bg-[#7C3AED]/20 hover:border-[#7C3AED]/30 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Create Event
+              </button>
+              <button
+                onClick={() => router.push('/events')}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-[#60A5FA] bg-[#60A5FA]/10 border border-[#60A5FA]/20 rounded-lg hover:bg-[#60A5FA]/20 hover:border-[#60A5FA]/30 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Browse Events
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Error Display */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
