@@ -15,7 +15,11 @@ export async function POST() {
       eventDescription: 'This is a test event to verify the email service is working.',
       userName: 'Test User',
       userEmail: 'timohl@hotmail.com', // Using your verified email for testing
-      eventId: 'test-event-123'
+      eventId: 'test-event-123',
+      eventStartISO: '2024-12-25T19:00:00.000Z', // Add ISO date for calendar functionality
+      eventEndISO: '2024-12-25T21:00:00.000Z', // Add end time
+      organizerName: 'Test Organizer',
+      organizerEmail: 'noreply@budevent.se'
     };
 
     const success = await EmailService.sendRSVPConfirmation(testEmailData);

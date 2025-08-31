@@ -14,7 +14,17 @@ function generateICSContent(event: {
   organizerEmail?: string;
 }) {
   const formatDate = (date: string) => {
-    return new Date(date).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    try {
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        throw new Error('Invalid date');
+      }
+      // Format as YYYYMMDDTHHMMSSZ for better compatibility
+      return dateObj.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    } catch (error) {
+      console.error('Error formatting date for ICS:', error);
+      return new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    }
   };
 
   const startDate = formatDate(event.startsAt);
@@ -26,15 +36,19 @@ function generateICSContent(event: {
     'PRODID:-//BudEvent//Calendar Event//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    'X-WR-CALNAME:BudEvent',
+    'X-WR-CALDESC:Events from BudEvent',
     'BEGIN:VEVENT',
-    `UID:${Date.now()}@budevent.com`,
+    `UID:${Date.now()}-${Math.random().toString(36).substr(2, 9)}@budevent.com`,
     `DTSTART:${startDate}`,
     `DTEND:${endDate}`,
-    `SUMMARY:${event.title}`,
-    event.description ? `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}` : '',
-    event.location ? `LOCATION:${event.location}` : '',
-    event.organizerName ? `ORGANIZER;CN=${event.organizerName}:mailto:${event.organizerEmail || 'noreply@budevent.com'}` : '',
+    `SUMMARY:${event.title.replace(/[\\;,\n]/g, '\\$&')}`,
+    event.description ? `DESCRIPTION:${event.description.replace(/[\\;,\n]/g, '\\$&')}` : '',
+    event.location ? `LOCATION:${event.location.replace(/[\\;,\n]/g, '\\$&')}` : '',
+    event.organizerName ? `ORGANIZER;CN=${event.organizerName.replace(/[\\;,\n]/g, '\\$&')}:mailto:${event.organizerEmail || 'noreply@budevent.com'}` : '',
     `DTSTAMP:${formatDate(new Date().toISOString())}`,
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
     'END:VEVENT',
     'END:VCALENDAR'
   ].filter(Boolean).join('\r\n');
@@ -63,10 +77,15 @@ function generateCalendarLinks(event: {
   const start = formatDate(startDate);
   const end = formatDate(endDate);
 
+  // For Apple Calendar, we'll use a direct calendar link that works on iOS
+  // Format: YYYYMMDDTHHMMSS
+  const appleStartDate = startDate.toISOString().slice(0, 19).replace(/[-:]/g, '');
+  const appleEndDate = endDate.toISOString().slice(0, 19).replace(/[-:]/g, '');
+
   return {
     google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`,
     outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&startdt=${start}&enddt=${end}&body=${description}&location=${location}`,
-    apple: `data:text/calendar;charset=utf8,BEGIN:VCALENDAR%0AVERSION:2.0%0ABEGIN:VEVENT%0ADTSTART:${start}%0ADTEND:${end}%0ASUMMARY:${title}%0ADESCRIPTION:${description}%0ALOCATION:${location}%0AEND:VEVENT%0AEND:VCALENDAR`
+    apple: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`
   };
 }
 
@@ -420,14 +439,20 @@ export class EmailService {
                   📅 Outlook
                 </a>
                 
-                <a href="${calendarLinks.apple}" class="calendar-button apple">
+                <a href="${calendarLinks.apple}" target="_blank" class="calendar-button apple">
                   📅 Apple Calendar
                 </a>
               </div>
               
               <p style="color: #6B7280; font-size: 14px; text-align: center; margin: 0;">
-                📥 A calendar file (.ics) is attached to this email for easy import
+                💡 <strong>Best for iPhone:</strong> Use the attached .ics file below - tap it to add to Apple Calendar
               </p>
+              
+              <div style="background: #F3F4F6; border: 1px solid #D1D5DB; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: center;">
+                <p style="margin: 0; color: #374151; font-size: 14px;">
+                  📱 <strong>iPhone Users:</strong> Look for the attached file below this email. Tap the .ics file to open it in Apple Calendar!
+                </p>
+              </div>
             </div>
             ` : ''}
             
