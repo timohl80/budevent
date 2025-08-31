@@ -442,7 +442,7 @@ export class EmailService {
           
           <div class="footer">
             <p>This email was sent from <strong>BudEvent</strong></p>
-            <p>© 2024 BudEvent. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -514,7 +514,7 @@ export class EmailService {
               
               <div class="footer">
                 <p>This email was sent from <strong>BudEvent</strong></p>
-                <p>© 2024 BudEvent. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -598,7 +598,7 @@ export class EmailService {
               
               <div class="footer">
                 <p>This email was sent from <strong>BudEvent</strong></p>
-                <p>© 2024 BudEvent. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
               </div>
             </div>
           </body>
