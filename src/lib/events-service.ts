@@ -592,6 +592,7 @@ export class EventsService {
         
         // Send confirmation email for new RSVPs
         try {
+          console.log('Attempting to send RSVP confirmation email for user:', userId);
           await this.sendRSVPEmail(eventId, userId, status);
         } catch (emailError) {
           console.error('Failed to send RSVP confirmation email:', emailError);
@@ -646,16 +647,24 @@ export class EventsService {
       }
 
       // Get user details
-      const { data: user } = await supabase
+      console.log('Looking up user details for ID:', userId);
+      const { data: user, error: userError } = await supabase
         .from('users')
         .select('name, email')
         .eq('id', userId)
         .single();
 
+      if (userError) {
+        console.error('Error looking up user:', userError);
+        return;
+      }
+
       if (!user) {
         console.error('User not found for email:', userId);
         return;
       }
+      
+      console.log('User found for email:', { name: user.name, email: user.email });
 
       // Get organizer details
       let organizerName = 'Event Organizer';

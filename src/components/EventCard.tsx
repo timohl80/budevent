@@ -89,10 +89,19 @@ export default function EventCard({ event }: EventCardProps) {
     
     setIsLoading(true);
     try {
+      console.log('Quick RSVP - Session user:', {
+        id: (session.user as { id: string }).id,
+        email: (session.user as any).email,
+        name: (session.user as any).name
+      });
+      
       await EventsService.rsvpToEvent(event.id, (session.user as { id: string }).id, 'going');
       setRsvpStatus('going');
+      
       // Refresh the RSVP status
       await checkUserRSVPStatus();
+      
+      console.log('Quick RSVP completed successfully');
     } catch (error) {
       console.error('Failed to RSVP to event:', error);
       // You could add a toast notification here
