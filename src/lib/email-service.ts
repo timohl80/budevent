@@ -156,17 +156,29 @@ export class EmailService {
         ];
       }
 
+      console.log('🔍 Attempting to send email with data:', {
+        from: emailData.from,
+        to: emailData.to,
+        subject: emailData.subject,
+        hasAttachments: !!emailData.attachments,
+        attachmentCount: emailData.attachments?.length || 0
+      });
+
       const { data: result, error } = await resend.emails.send(emailData);
 
       if (error) {
-        console.error('Error sending RSVP confirmation email:', error);
+        console.error('🔍 Resend API error:', error);
+        console.error('🔍 Error details:', JSON.stringify(error, null, 2));
         return false;
       }
 
-      console.log('RSVP confirmation email sent successfully:', result?.id);
+      console.log('🔍 RSVP confirmation email sent successfully:', result?.id);
       return true;
     } catch (error) {
-      console.error('Failed to send RSVP confirmation email:', error);
+      console.error('🔍 Exception in sendRSVPConfirmation:', error);
+      console.error('🔍 Error type:', typeof error);
+      console.error('🔍 Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('🔍 Full error object:', error);
       return false;
     }
   }

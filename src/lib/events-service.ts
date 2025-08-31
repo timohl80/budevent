@@ -753,11 +753,25 @@ export class EventsService {
       };
 
       // Send email
+      console.log('🔍 About to call EmailService.sendRSVPConfirmation with data:', {
+        eventName: emailData.eventName,
+        eventDate: emailData.eventDate,
+        eventTime: emailData.eventTime,
+        eventLocation: emailData.eventLocation,
+        eventDescription: emailData.eventDescription,
+        userName: emailData.userName,
+        userEmail: emailData.userEmail,
+        eventId: emailData.eventId,
+        eventStartISO: emailData.eventStartISO,
+        organizerName: emailData.organizerName,
+        organizerEmail: emailData.organizerEmail
+      });
+      
       const emailSent = await EmailService.sendRSVPConfirmation(emailData);
       if (emailSent) {
-        console.log('RSVP confirmation email sent successfully');
+        console.log('🔍 RSVP confirmation email sent successfully');
       } else {
-        console.error('Failed to send RSVP confirmation email');
+        console.error('🔍 Failed to send RSVP confirmation email');
       }
     } catch (error) {
       console.error('Error in sendRSVPEmail:', error);
