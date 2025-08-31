@@ -160,7 +160,10 @@ export default function EnhancedWeatherForecast({
             </div>
             <button
               type="button"
-              onClick={() => setSelectedWeatherDate(null)}
+              onClick={() => {
+                setSelectedWeatherDate(null);
+                setLocation(''); // Clear the input field
+              }}
               className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
             >
               Change Location
