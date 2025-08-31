@@ -316,7 +316,7 @@ export class EmailService {
           }
           .calendar-button.google { background-color: #4285F4; }
           .calendar-button.outlook { background-color: #0078D4; }
-          .calendar-button.apple { background-color: #000000; }
+          .calendar-button.apple { background-color: #555555; }
           .footer {
             background-color: #f8f9fa;
             padding: 25px 30px;
@@ -442,7 +442,7 @@ export class EmailService {
           
           <div class="footer">
             <p>This email was sent from <strong>BudEvent</strong></p>
-            <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
+            <p>© 2025 BudEvent. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -514,7 +514,7 @@ export class EmailService {
               
               <div class="footer">
                 <p>This email was sent from <strong>BudEvent</strong></p>
-                <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
+                <p>© 2025 BudEvent. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -598,7 +598,7 @@ export class EmailService {
               
               <div class="footer">
                 <p>This email was sent from <strong>BudEvent</strong></p>
-                <p>© {new Date().getFullYear()} BudEvent. All rights reserved.</p>
+                <p>© 2025 BudEvent. All rights reserved.</p>
               </div>
             </div>
           </body>
