@@ -89,38 +89,39 @@ export default function EventCard({ event }: EventCardProps) {
     
     setIsLoading(true);
     try {
-      const sessionUser = {
-        id: (session.user as { id: string }).id,
-        email: (session.user as any).email,
-        name: (session.user as any).name
-      };
+      // Use the exact same logic as the dashboard
+      const user = session.user;
+      const userId = (user as any).id || user.email;
       
-      console.log('Quick RSVP - Session user:', sessionUser);
-      
-      // Validate session data
-      if (!sessionUser.email || !sessionUser.email.includes('@')) {
-        console.error('Invalid email in session:', sessionUser.email);
-        alert('Error: Invalid email in session. Please try logging out and back in.');
+      if (!userId) {
+        console.error('Could not extract user ID for RSVP');
+        alert('Error: Could not identify user. Please try logging out and back in.');
         return;
       }
       
-      if (!sessionUser.name) {
-        console.error('No name in session:', sessionUser.name);
-        alert('Error: No name in session. Please try logging out and back in.');
-        return;
+      console.log('🔍 Quick RSVP - User ID:', userId);
+      console.log('🔍 Quick RSVP - User email:', user.email);
+      console.log('🔍 Quick RSVP - User name:', user.name);
+      
+      // Call the RSVP API endpoint (server-side) instead of client-side EventsService
+      console.log('🔍 Calling RSVP API endpoint...');
+      const response = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId: event.id,
+          status: 'going'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`RSVP failed: ${response.statusText}`);
       }
       
-      console.log('🔍 Calling EventsService.rsvpToEvent...');
-      const rsvpResult = await EventsService.rsvpToEvent(
-        event.id, 
-        sessionUser.id, 
-        'going',
-        {
-          name: sessionUser.name,
-          email: sessionUser.email
-        }
-      );
-      console.log('🔍 RSVP result:', rsvpResult);
+      const rsvpResult = await response.json();
+      console.log('🔍 RSVP API result:', rsvpResult);
       
       setRsvpStatus('going');
       
@@ -128,7 +129,7 @@ export default function EventCard({ event }: EventCardProps) {
       await checkUserRSVPStatus();
       
       console.log('🔍 Quick RSVP completed successfully');
-      console.log('🔍 Email should have been sent to:', sessionUser.email);
+      console.log('🔍 Email should have been sent to:', user.email);
     } catch (error) {
       console.error('Failed to RSVP to event:', error);
       alert('Failed to RSVP to event. Please try again.');
