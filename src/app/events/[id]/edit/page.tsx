@@ -8,7 +8,7 @@ import { EventsService } from '@/lib/events-service';
 import { EventLite } from '@/lib/types';
 import { SimpleStorageService } from '@/lib/simple-storage-service';
 import ImageUpload from '@/components/ImageUpload';
-import WeatherForecast from '@/components/WeatherForecast';
+import EnhancedWeatherForecast from '@/components/EnhancedWeatherForecast';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -521,93 +521,81 @@ export default function EditEventPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="location" className="block text-sm font-medium text-[#2D3436]">
-              Location
+          {/* Location & Weather Forecast */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-[#2D3436]">
+              Location & Weather Forecast
             </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
-              placeholder="Enter event location"
-            />
-            <p className="text-sm text-[#2D3436] opacity-70">
-              Enter a Swedish city name to see weather forecast and pick the best date for your event
-            </p>
             
             {/* Weather Forecast Toggle */}
-            {formData.location && (
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowWeatherForecast(!showWeatherForecast)}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5 text-[#A29BFE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-sm font-medium text-[#2D3436]">Location & Weather</span>
+                {formData.eventDate && (
+                  <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                    Date Selected ✓
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWeatherForecast(!showWeatherForecast)}
+                className="flex items-center space-x-1 text-sm text-[#A29BFE] hover:text-[#8B7EC8] transition-colors"
+              >
+                <span>{showWeatherForecast ? 'Hide' : 'Show'}</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${showWeatherForecast ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                  </svg>
-                  {showWeatherForecast ? 'Hide Weather Forecast' : 'Show Weather Forecast'}
-                </button>
-              </div>
-            )}
-            
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
             {/* Weather Forecast Component */}
-            {formData.location && showWeatherForecast && (
-              <div className="mt-4">
-                <WeatherForecast
-                  location={formData.location}
-                  onDateSelect={(date) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      eventDate: date
-                    }));
-                    setShowWeatherForecast(false);
-                  }}
-                  selectedDate={formData.eventDate}
-                />
-              </div>
+            {showWeatherForecast && (
+              <EnhancedWeatherForecast
+                initialLocation={formData.location}
+                onDateSelect={(date) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    eventDate: date
+                  }));
+                  setShowWeatherForecast(false);
+                }}
+                onLocationSelect={(location, coordinates) => {
+                  setFormData(prev => ({ ...prev, location }));
+                  console.log('Selected location coordinates:', coordinates);
+                }}
+              />
             )}
-            
-            {/* Selected Date Summary */}
-            {formData.eventDate && !showWeatherForecast && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+
+            {/* Location Summary (when weather is hidden) */}
+            {!showWeatherForecast && formData.location && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <span className="text-sm font-medium text-green-700">Date Selected ✓</span>
+                    <span className="text-sm font-medium text-blue-700">
+                      Location: {formData.location}
+                    </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowWeatherForecast(true)}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    className="text-xs text-[#A29BFE] hover:text-[#8B7EC8] underline"
                   >
-                    Change Date
+                    Change location
                   </button>
-                </div>
-                <div className="mt-2 text-sm text-green-600">
-                  {(() => {
-                    try {
-                      const date = new Date(formData.eventDate);
-                      return date.toLocaleDateString('sv-SE', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      });
-                    } catch {
-                      // Fallback for Safari
-                      const [year, month, day] = formData.eventDate.split('-');
-                      const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
-                      const weekdays = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
-                      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                      return `${weekdays[date.getDay()]} ${parseInt(day)} ${months[parseInt(month) - 1]} ${year}`;
-                    }
-                  })()}
                 </div>
               </div>
             )}

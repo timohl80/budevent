@@ -477,7 +477,15 @@ export default function EventDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       <div className="flex-1">
-                        <span className="font-medium">{event.location}</span>
+                        <a
+                          href={`https://www.google.com/maps/search/${encodeURIComponent(event.location + ', Sweden')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                          title={`Open ${event.location} in Google Maps`}
+                        >
+                          {event.location}
+                        </a>
                       </div>
                     </div>
                   </div>

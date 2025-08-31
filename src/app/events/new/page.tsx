@@ -7,7 +7,7 @@ import { EventsService } from '@/lib/events-service';
 import { useSession } from 'next-auth/react';
 import { SimpleStorageService } from '@/lib/simple-storage-service';
 import ImageUpload from '@/components/ImageUpload';
-import WeatherForecast from '@/components/WeatherForecast';
+import EnhancedWeatherForecast from '@/components/EnhancedWeatherForecast';
 
 export default function CreateEventPage() {
   return <CreateEventForm />;
@@ -355,109 +355,76 @@ function CreateEventForm() {
                 <p className="text-sm text-gray-500">All times are in Swedish time (CET/CEST) - 24-hour format</p>
               </div>
 
-              {/* Location */}
-              <div className="space-y-3">
-                <label htmlFor="location" className="block text-sm font-semibold text-gray-700">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
-                  placeholder="Where will your event take place?"
-                />
-              </div>
-
               {/* Weather Forecast */}
-              {formData.location && (
-                <div className="space-y-3">
-                  {/* Weather Forecast Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-5 h-5 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      <span className="text-sm font-medium text-gray-700">Weather Forecast</span>
-                      {formData.eventDate && (
-                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                          Date Selected ✓
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowWeatherForecast(!showWeatherForecast)}
-                      className="flex items-center space-x-1 text-sm text-[#60A5FA] hover:text-[#4B89E8] transition-colors"
-                    >
-                      <span>{showWeatherForecast ? 'Hide' : 'Show'}</span>
-                      <svg 
-                        className={`w-4 h-4 transition-transform ${showWeatherForecast ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+              <div className="space-y-3">
+                {/* Weather Forecast Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">Location & Weather Forecast</span>
+                    {formData.eventDate && (
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                        Date Selected ✓
+                      </span>
+                    )}
                   </div>
-
-                  {/* Weather Forecast Content */}
-                  {showWeatherForecast && (
-                    <WeatherForecast 
-                      location={formData.location}
-                      onDateSelect={(date) => {
-                        setFormData(prev => ({ ...prev, eventDate: date }));
-                      }}
-                      selectedDate={formData.eventDate}
-                    />
-                  )}
-
-                  {/* Selected Date Summary (when weather is hidden) */}
-                  {!showWeatherForecast && formData.eventDate && (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm font-medium text-green-700">
-                            Selected: {(() => {
-                              try {
-                                const date = new Date(formData.eventDate);
-                                return date.toLocaleDateString('sv-SE', {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                });
-                              } catch (e) {
-                                // Fallback for Safari
-                                const date = new Date(formData.eventDate);
-                                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                                return `${days[date.getDay()]} ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-                              }
-                            })()}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setShowWeatherForecast(true)}
-                          className="text-xs text-[#60A5FA] hover:text-[#4B89E8] underline"
-                        >
-                          Change date
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-600 mt-2">
-                        You can pick any date using the date picker above, or use the weather forecast for guidance
-                      </p>
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowWeatherForecast(!showWeatherForecast)}
+                    className="flex items-center space-x-1 text-sm text-[#60A5FA] hover:text-[#4B8E8] transition-colors"
+                  >
+                    <span>{showWeatherForecast ? 'Hide' : 'Show'}</span>
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${showWeatherForecast ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
                 </div>
-              )}
+
+                {/* Weather Forecast Content */}
+                {showWeatherForecast && (
+                  <EnhancedWeatherForecast 
+                    initialLocation={formData.location}
+                    onDateSelect={(date) => {
+                      setFormData(prev => ({ ...prev, eventDate: date }));
+                    }}
+                    onLocationSelect={(location, coordinates) => {
+                      setFormData(prev => ({ ...prev, location }));
+                      console.log('Selected location coordinates:', coordinates);
+                    }}
+                  />
+                )}
+
+                {/* Location Summary (when weather is hidden) */}
+                {!showWeatherForecast && formData.location && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-blue-700">
+                          Location: {formData.location}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowWeatherForecast(true)}
+                        className="text-xs text-[#60A5FA] hover:text-[#4B8E8] underline"
+                      >
+                        Change location
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* External Link Title */}
               <div className="space-y-3">
