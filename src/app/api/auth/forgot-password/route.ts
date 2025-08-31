@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { EmailService } from '@/lib/email-service';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address').toLowerCase(),
@@ -65,9 +66,25 @@ export async function POST(request: NextRequest) {
     // Create reset link
     const resetLink = `${process.env.NEXTAUTH_URL || 'https://budevent.se'}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
-    // TODO: Send email with reset link
-    // For now, just log it (you can implement email sending later)
-    console.log('Password reset link for', email, ':', resetLink);
+    // Send password reset email
+    const emailSent = await EmailService.sendPasswordReset(user.email, user.name, resetLink);
+    
+    if (!emailSent) {
+      console.error('Failed to send password reset email to:', user.email);
+      // Clean up the token since email failed
+      await supabase
+        .from('users')
+        .update({
+          reset_token: null,
+          reset_token_expiry: null,
+        })
+        .eq('id', user.id);
+      
+      return NextResponse.json(
+        { error: 'Failed to send password reset email. Please try again later.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { 

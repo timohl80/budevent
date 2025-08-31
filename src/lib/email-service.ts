@@ -590,6 +590,198 @@ export class EmailService {
   }
 
   /**
+   * Send password reset email to user
+   */
+  static async sendPasswordReset(userEmail: string, userName: string | null, resetLink: string): Promise<boolean> {
+    if (!resend) {
+      console.error('Resend client not initialized - missing API key');
+      return false;
+    }
+
+    try {
+      const { error } = await resend.emails.send({
+        from: 'noreply@budevent.se',
+        to: [userEmail],
+        subject: '🔐 Reset Your BudEvent Password',
+        html: this.generatePasswordResetEmailHTML(userName, resetLink),
+      });
+
+      if (error) {
+        console.error('Failed to send password reset email:', error);
+        return false;
+      }
+
+      console.log('Password reset email sent successfully to:', userEmail);
+      return true;
+    } catch (error) {
+      console.error('Exception in sendPasswordReset:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate HTML email for password reset
+   */
+  private static generatePasswordResetEmailHTML(userName: string | null, resetLink: string): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Your Password - BudEvent</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2D3436;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+          }
+          .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+          }
+          .content {
+            padding: 40px 30px;
+            background: #ffffff;
+          }
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            color: white;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 25px 0;
+            transition: all 0.3s ease;
+          }
+          .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
+          }
+          .warning-box {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+          }
+          .warning-box h4 {
+            margin: 0 0 10px 0;
+            color: #92400E;
+            font-size: 16px;
+          }
+          .warning-box p {
+            margin: 0;
+            color: #92400E;
+            font-size: 14px;
+          }
+          .footer {
+            background-color: #f8f9fa;
+            padding: 25px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+          }
+          .footer p {
+            margin: 0;
+            color: #60A5FA;
+            font-size: 14px;
+            font-weight: 500;
+          }
+          .footer a {
+            color: #60A5FA;
+            text-decoration: none;
+            font-weight: 500;
+          }
+          @media (max-width: 600px) {
+            .container {
+              margin: 10px;
+              border-radius: 8px;
+            }
+            .header, .content, .footer {
+              padding: 25px 20px;
+            }
+            .header h1 {
+              font-size: 24px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Reset Your Password</h1>
+            <p>You requested a password reset for your BudEvent account</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hi ${userName || 'there'}!</h2>
+            
+            <p>We received a request to reset the password for your BudEvent account. If you didn't make this request, you can safely ignore this email.</p>
+            
+            <p>To reset your password, click the button below:</p>
+            
+            <div style="text-align: center;">
+              <a href="${resetLink}" class="cta-button">
+                Reset My Password
+              </a>
+            </div>
+            
+            <div class="warning-box">
+              <h4>⚠️ Important Security Notes:</h4>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #92400E;">
+                <li>This link will expire in <strong>1 hour</strong></li>
+                <li>Only use this link on a device you trust</li>
+                <li>If you didn't request this reset, please ignore this email</li>
+              </ul>
+            </div>
+            
+            <p>If the button above doesn't work, you can copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #6B7280; font-size: 14px; background: #F3F4F6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+              ${resetLink}
+            </p>
+            
+            <p style="margin-top: 25px; font-size: 14px; color: #6c757d;">
+              If you have any questions or need assistance, please don't hesitate to contact our support team.
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p>This email was sent from <strong>BudEvent</strong></p>
+            <p>© 2025 BudEvent. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
    * Test email service connection
    */
   static async testConnection(): Promise<boolean> {
