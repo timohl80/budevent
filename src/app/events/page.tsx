@@ -168,30 +168,26 @@ export default function EventsPage() {
         <h1 className="text-4xl font-bold text-[#F3F4F6]">
           All Events
         </h1>
-        <p className="text-lg text-[#9CA3AF] max-w-3xl mx-auto">
-          Discover and join amazing events. Use the search and filters below to find exactly what you&apos;re looking for.
-        </p>
-      </div>
-      
-      {/* Create Event Button */}
-      <div className="text-center">
-        <Link
-          href="/events/new"
-          className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors shadow-lg"
-        >
-          <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Create Event
-        </Link>
       </div>
       
       {/* Search and Filter Section */}
       <section className="w-full px-2 sm:px-4 lg:px-6">
         <SearchAndFilter onFiltersChange={handleFiltersChange} />
         
-        {/* Active/Past Events Tabs */}
-        <div className="flex justify-center mb-8">
+        {/* Create Event Button and Active/Past Events Tabs */}
+        <div className="flex justify-center items-center gap-6 mb-8">
+          {/* Create Event Button */}
+          <Link
+            href="/events/new"
+            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors shadow-lg"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Create Event
+          </Link>
+          
+          {/* Active/Past Events Tabs */}
           <div className="bg-gray-800 rounded-lg p-1 flex">
             <button
               onClick={() => handleTabChange('active')}

@@ -26,7 +26,7 @@ export default function RootLayout({
         <SessionProvider>
           <div className="w-full flex flex-col min-h-screen">
             <TopNav />
-            <main className="flex-1 bg-white border-b border-gray-200">
+            <main className="flex-1 bg-white border-b border-gray-50">
               {children}
             </main>
             <Footer />

@@ -6,18 +6,18 @@ export default function Footer() {
   return (
     <footer className="bg-[#2D3436] text-white">
       {/* Top accent line */}
-      <div className="h-1 bg-gradient-to-r from-[#60A5FA] via-[#A29BFE] to-[#60A5FA]"></div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="h-px bg-gradient-to-r from-[#60A5FA] via-[#A29BFE] to-[#60A5FA]"></div>
+                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-[#60A5FA] rounded-lg mr-3 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">B</span>
-              </div>
-              <h3 className="text-xl font-bold">BudEvent</h3>
-            </div>
-            <p className="text-gray-300 mb-4 max-w-md">
+                             <div className="flex items-center mb-2">
+                   <div className="w-8 h-8 bg-[#60A5FA] rounded-lg mr-3 flex items-center justify-center">
+                     <span className="text-white font-bold text-lg">B</span>
+                   </div>
+                   <h3 className="text-xl font-bold">BudEvent</h3>
+                 </div>
+                 <p className="text-gray-300 mb-2 max-w-md">
               Connect with friends and discover amazing events in your area. 
               From casual meetups to exciting activities, BudEvent makes it easy to stay connected.
             </p>
@@ -33,9 +33,9 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
+                           <div>
+                   <h4 className="text-lg font-semibold mb-2">Quick Links</h4>
+                   <ul className="space-y-1">
               <li>
                 <Link href="/events" className="text-gray-300 hover:text-white transition-colors">
                   Browse Events
@@ -60,9 +60,9 @@ export default function Footer() {
           </div>
 
           {/* Support & Legal */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Support & Legal</h4>
-            <ul className="space-y-2">
+                           <div>
+                   <h4 className="text-lg font-semibold mb-2">Support & Legal</h4>
+                   <ul className="space-y-1">
               <li>
                 <Link href="/info/faq" className="text-gray-300 hover:text-white transition-colors">
                   FAQ
@@ -87,10 +87,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="mt-8 pt-8">
-          {/* Custom gradient line */}
-          <div className="h-px bg-gradient-to-r from-transparent via-[#60A5FA] to-transparent mb-8"></div>
+                       {/* Bottom Section */}
+               <div className="mt-4 pt-4">
+                 {/* Custom gradient line */}
+                 <div className="h-px bg-gradient-to-r from-transparent via-[#60A5FA] to-transparent mb-4"></div>
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
               © {currentYear} BudEvent. All rights reserved.

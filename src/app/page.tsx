@@ -95,12 +95,12 @@ export default function Home() {
 
 
   return (
-    <main className="space-y-12 py-12 bg-[#111827] min-h-screen">
-      <div className="text-center space-y-6">
-        <h1 className="text-4xl font-bold text-[#F3F4F6]">
+    <main className="space-y-8 py-8 bg-[#111827] min-h-screen">
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl font-bold text-[#F3F4F6]">
           Welcome to BudEvent 👋
         </h1>
-        <p className="text-lg text-[#9CA3AF] max-w-3xl mx-auto">
+        <p className="text-base text-[#9CA3AF] max-w-3xl mx-auto">
           Stay connected with your crew. Create, share, and join events with friends – so you never miss a chance to hang out.
         </p>
       </div>
@@ -111,11 +111,11 @@ export default function Home() {
         <section className="w-full px-2 sm:px-4 lg:px-6">
 
         {/* Event Type Tabs */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <div className="bg-[#1F2937] rounded-lg p-1 shadow-sm border border-[#374151]">
             <button
               onClick={() => handleTabChange('upcoming')}
-              className={`px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 activeTab === 'upcoming'
                   ? 'bg-[#3B82F6] text-white shadow-sm transform scale-105'
                   : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-[#374151] hover:scale-102'
@@ -125,7 +125,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => handleTabChange('newly-added')}
-              className={`px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 activeTab === 'newly-added'
                   ? 'bg-[#3B82F6] text-white shadow-sm transform scale-105'
                   : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-[#374151] hover:scale-102'
@@ -136,33 +136,27 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-[#F3F4F6] mb-2">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-[#F3F4F6]">
             {activeTab === 'upcoming' ? 'Upcoming Events' : 'Newly Added Events'}
           </h2>
-          <p className="text-[#9CA3AF]">
-            {activeTab === 'upcoming' 
-              ? 'Check out what\'s happening soon'
-              : 'Discover the latest events added to BudEvent'
-            }
-          </p>
         </div>
         
         {loading ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3B82F6] mx-auto"></div>
             <p className="mt-2 text-[#9CA3AF]">Loading events...</p>
           </div>
         ) : null}
         
         {!loading && recentEvents.length > 0 ? (
-          <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid gap-4 sm:gap-6 lg:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {recentEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-8">
             <p className="text-[#9CA3AF]">
               {activeTab === 'upcoming' 
                 ? 'No upcoming events yet. Check back later for new events!'
@@ -174,7 +168,7 @@ export default function Home() {
         
         {/* View All Events Button */}
         {recentEvents.length > 0 && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-6">
             <Link
               href="/events"
               className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors"
