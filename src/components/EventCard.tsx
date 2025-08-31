@@ -89,19 +89,34 @@ export default function EventCard({ event }: EventCardProps) {
     
     setIsLoading(true);
     try {
-      console.log('Quick RSVP - Session user:', {
+      const sessionUser = {
         id: (session.user as { id: string }).id,
         email: (session.user as any).email,
         name: (session.user as any).name
-      });
+      };
+      
+      console.log('Quick RSVP - Session user:', sessionUser);
+      
+      // Validate session data
+      if (!sessionUser.email || !sessionUser.email.includes('@')) {
+        console.error('Invalid email in session:', sessionUser.email);
+        alert('Error: Invalid email in session. Please try logging out and back in.');
+        return;
+      }
+      
+      if (!sessionUser.name) {
+        console.error('No name in session:', sessionUser.name);
+        alert('Error: No name in session. Please try logging out and back in.');
+        return;
+      }
       
       await EventsService.rsvpToEvent(
         event.id, 
-        (session.user as { id: string }).id, 
+        sessionUser.id, 
         'going',
         {
-          name: (session.user as any).name,
-          email: (session.user as any).email
+          name: sessionUser.name,
+          email: sessionUser.email
         }
       );
       setRsvpStatus('going');
@@ -112,7 +127,7 @@ export default function EventCard({ event }: EventCardProps) {
       console.log('Quick RSVP completed successfully');
     } catch (error) {
       console.error('Failed to RSVP to event:', error);
-      // You could add a toast notification here
+      alert('Failed to RSVP to event. Please try again.');
     } finally {
       setIsLoading(false);
     }

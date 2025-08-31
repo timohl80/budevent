@@ -1,6 +1,7 @@
 import { EventLite, EventRSVP } from '@/lib/types';
 import RSVPEventCard from './RSVPEventCard';
 import MyEventCard from './MyEventCard';
+import { useState } from 'react';
 
 interface RSVPDashboardProps {
   activeTab: 'my-events' | 'my-rsvps';
@@ -21,6 +22,8 @@ export default function RSVPDashboard({
   onRefresh,
   onTabChange
 }: RSVPDashboardProps) {
+  const [rsvpFilter, setRsvpFilter] = useState<'all' | 'going' | 'maybe' | 'not_going'>('all');
+
   const renderRSVPsTab = () => {
     if (userRSVPs.length === 0) {
       return (
@@ -49,93 +52,115 @@ export default function RSVPDashboard({
     const maybeRSVPs = userRSVPs.filter(rsvp => rsvp.status === 'maybe');
     const notGoingRSVPs = userRSVPs.filter(rsvp => rsvp.status === 'not_going');
 
+    // Filter RSVPs based on selected filter
+    const getFilteredRSVPs = () => {
+      switch (rsvpFilter) {
+        case 'going':
+          return goingRSVPs;
+        case 'maybe':
+          return maybeRSVPs;
+        case 'not_going':
+          return notGoingRSVPs;
+        default:
+          return userRSVPs; // 'all'
+      }
+    };
+
+    const filteredRSVPs = getFilteredRSVPs();
+
     return (
-      <div className="space-y-8">
-        {/* Going */}
-        {goingRSVPs.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+      <div className="space-y-6">
+        {/* RSVP Filter Tabs */}
+        <div className="flex justify-center">
+          <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+            <button
+              onClick={() => setRsvpFilter('all')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                rsvpFilter === 'all'
+                  ? 'bg-[#A29BFE] text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              All ({userRSVPs.length})
+            </button>
+            <button
+              onClick={() => setRsvpFilter('going')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                rsvpFilter === 'going'
+                  ? 'bg-green-500 text-white shadow-sm'
+                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+              }`}
+            >
               Going ({goingRSVPs.length})
-            </h2>
-            <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {goingRSVPs.map((rsvp) => {
-                // If we have event data, use it; otherwise create a minimal event object
-                const eventData = rsvp.event || {
-                  id: rsvp.eventId,
-                  title: 'Event Details Loading...',
-                  startsAt: new Date().toISOString(),
-                  location: '',
-                  description: '',
-                  isPublic: true,
-                  status: 'active' as const,
-                  userId: '',
-                  rsvpCount: 0,
-                  commentCount: 0,
-                  externalLink: undefined
-                };
-                
-                return (
-                  <RSVPEventCard
-                    key={rsvp.id}
-                    event={eventData}
-                    rsvp={rsvp}
-                    onUpdate={onRSVPUpdate}
-                    onCancel={onRSVPCancel}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Maybe */}
-        {maybeRSVPs.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
+            </button>
+            <button
+              onClick={() => setRsvpFilter('maybe')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                rsvpFilter === 'maybe'
+                  ? 'bg-yellow-500 text-white shadow-sm'
+                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+              }`}
+            >
               Maybe ({maybeRSVPs.length})
-            </h2>
-            <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {maybeRSVPs.map((rsvp) => {
-                // If we have event data, use it; otherwise create a minimal event object
-                const eventData = rsvp.event || {
-                  id: rsvp.eventId,
-                  title: 'Event Details Loading...',
-                  startsAt: new Date().toISOString(),
-                  location: '',
-                  description: '',
-                  isPublic: true,
-                  status: 'active' as const,
-                  userId: '',
-                  rsvpCount: 0,
-                  commentCount: 0,
-                  externalLink: undefined
-                };
-                
-                return (
-                  <RSVPEventCard
-                    key={rsvp.id}
-                    event={eventData}
-                    rsvp={rsvp}
-                    onUpdate={onRSVPUpdate}
-                    onCancel={onRSVPCancel}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Not Going */}
-        {notGoingRSVPs.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="w-3 h-3 bg-red-500 rounded-full mr-3"></span>
+            </button>
+            <button
+              onClick={() => setRsvpFilter('not_going')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                rsvpFilter === 'not_going'
+                  ? 'bg-red-500 text-white shadow-sm'
+                  : 'bg-red-100 text-red-700 hover:bg-red-200'
+              }`}
+            >
               Not Going ({notGoingRSVPs.length})
-            </h2>
+            </button>
+          </div>
+        </div>
+
+        {/* Filtered RSVP Content */}
+        {filteredRSVPs.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-18 0 7 7 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-500">
+              {rsvpFilter === 'all' 
+                ? 'No RSVPs found. Try browsing events to get started!'
+                : `No events with "${rsvpFilter === 'going' ? 'Going' : rsvpFilter === 'maybe' ? 'Maybe' : 'Not Going'}" status.`
+              }
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Active Filter Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {rsvpFilter === 'all' && 'All Your RSVPs'}
+                {rsvpFilter === 'going' && (
+                  <span className="flex items-center justify-center">
+                    <span className="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+                    Events You're Going To ({filteredRSVPs.length})
+                  </span>
+                )}
+                {rsvpFilter === 'maybe' && (
+                  <span className="flex items-center justify-center">
+                    <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
+                    Events You Might Attend ({filteredRSVPs.length})
+                  </span>
+                )}
+                {rsvpFilter === 'not_going' && (
+                  <span className="flex items-center justify-center">
+                    <span className="w-3 h-3 bg-red-500 rounded-full mr-3"></span>
+                    Events You're Not Attending ({filteredRSVPs.length})
+                  </span>
+                )}
+              </h2>
+            </div>
+            
             <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {notGoingRSVPs.map((rsvp) => {
+              {filteredRSVPs.map((rsvp) => {
                 // If we have event data, use it; otherwise create a minimal event object
                 const eventData = rsvp.event || {
                   id: rsvp.eventId,
@@ -162,7 +187,7 @@ export default function RSVPDashboard({
                 );
               })}
             </div>
-          </div>
+          </>
         )}
       </div>
     );

@@ -593,6 +593,7 @@ export class EventsService {
         // Send confirmation email for new RSVPs
         try {
           console.log('Attempting to send RSVP confirmation email for user:', userId);
+          console.log('Session user data provided:', sessionUserData);
           await this.sendRSVPEmail(eventId, userId, status, sessionUserData);
         } catch (emailError) {
           console.error('Failed to send RSVP confirmation email:', emailError);

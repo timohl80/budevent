@@ -178,6 +178,22 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id as string
+        
+        // Fetch user details from database to ensure we have the latest data
+        try {
+          const { data: user } = await supabase
+            .from('users')
+            .select('email, name')
+            .eq('id', token.id)
+            .single();
+          
+          if (user) {
+            (session.user as any).email = user.email;
+            (session.user as any).name = user.name;
+          }
+        } catch (error) {
+          console.error('Error fetching user details for session:', error);
+        }
       }
       return session
     }

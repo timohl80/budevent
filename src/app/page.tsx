@@ -14,6 +14,13 @@ export default function Home() {
   const router = useRouter();
   const [recentEvents, setRecentEvents] = useState<EventLite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'newly-added'>('upcoming');
+
+  // Handle tab change with loading state
+  const handleTabChange = (newTab: 'upcoming' | 'newly-added') => {
+    setActiveTab(newTab);
+    setLoading(true); // Show loading when switching tabs
+  };
 
   // Redirect unauthenticated users to welcome page
   useEffect(() => {
@@ -29,26 +36,39 @@ export default function Home() {
   useEffect(() => {
     async function fetchRecentEvents() {
       try {
-        // Fetch upcoming events and sort them properly
+        // Fetch all events
         const allEvents = await EventsService.getEvents();
         
-        // Filter for upcoming events (events that haven't started yet)
-        const now = new Date();
-        const upcomingEvents = allEvents.filter(event => {
-          const eventDate = new Date(event.startsAt);
-          return eventDate > now;
-        });
+        let eventsToShow: EventLite[] = [];
         
-        // Sort by start date (earliest first) and take the first 3
-        const sortedEvents = upcomingEvents
-          .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
-          .slice(0, 3);
+        if (activeTab === 'upcoming') {
+          // Filter for upcoming events (events that haven't started yet)
+          const now = new Date();
+          const upcomingEvents = allEvents.filter(event => {
+            const eventDate = new Date(event.startsAt);
+            return eventDate > now;
+          });
+          
+          // Sort by start date (earliest first) and take the first 3
+          eventsToShow = upcomingEvents
+            .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+            .slice(0, 3);
+          
+          console.log('All events fetched:', allEvents.length);
+          console.log('Upcoming events:', upcomingEvents.length);
+          console.log('Events to display:', eventsToShow.map(e => ({ title: e.title, startsAt: e.startsAt })));
+        } else {
+          // Show newly added events (most recently added to the list)
+          // Since we don't have createdAt in EventLite, we'll use the order they appear in the database
+          // This will show the most recently fetched events
+          eventsToShow = allEvents.slice(0, 3);
+          
+          console.log('All events fetched:', allEvents.length);
+          console.log('Newly added events:', eventsToShow.length);
+          console.log('Events to display:', eventsToShow.map(e => ({ title: e.title, startsAt: e.startsAt })));
+        }
         
-        console.log('All events fetched:', allEvents.length);
-        console.log('Upcoming events:', upcomingEvents.length);
-        console.log('Events to display:', sortedEvents.map(e => ({ title: e.title, startsAt: e.startsAt })));
-        
-        setRecentEvents(sortedEvents);
+        setRecentEvents(eventsToShow);
       } catch (error) {
         console.error('Error fetching recent events:', error);
       } finally {
@@ -60,7 +80,7 @@ export default function Home() {
     if (status === 'authenticated') {
       fetchRecentEvents();
     }
-  }, [status]);
+  }, [status, activeTab]);
 
   // Don't render anything while checking auth or redirecting
   if (status === 'loading' || status === 'unauthenticated') {
@@ -88,12 +108,41 @@ export default function Home() {
 
       {/* Recent Events Section */}
       <section className="w-full px-2 sm:px-4 lg:px-6">
+        {/* Event Type Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-[#1F2937] rounded-lg p-1 shadow-sm border border-[#374151]">
+            <button
+              onClick={() => handleTabChange('upcoming')}
+              className={`px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                activeTab === 'upcoming'
+                  ? 'bg-[#3B82F6] text-white shadow-sm transform scale-105'
+                  : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-[#374151] hover:scale-102'
+              }`}
+            >
+              Upcoming Events
+            </button>
+            <button
+              onClick={() => handleTabChange('newly-added')}
+              className={`px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ${
+                activeTab === 'newly-added'
+                  ? 'bg-[#3B82F6] text-white shadow-sm transform scale-105'
+                  : 'text-[#9CA3AF] hover:text-[#F3F4F6] hover:bg-[#374151] hover:scale-102'
+              }`}
+            >
+              Newly Added
+            </button>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-[#F3F4F6] mb-2">
-            Upcoming Events
+            {activeTab === 'upcoming' ? 'Upcoming Events' : 'Newly Added Events'}
           </h2>
           <p className="text-[#9CA3AF]">
-            Check out what&apos;s happening soon
+            {activeTab === 'upcoming' 
+              ? 'Check out what\'s happening soon'
+              : 'Discover the latest events added to BudEvent'
+            }
           </p>
         </div>
         
@@ -110,7 +159,12 @@ export default function Home() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-[#9CA3AF]">No upcoming events yet.</p>
+            <p className="text-[#9CA3AF]">
+              {activeTab === 'upcoming' 
+                ? 'No upcoming events yet. Check back later for new events!'
+                : 'No events have been added yet. Be the first to create an event!'
+              }
+            </p>
           </div>
         )}
         
