@@ -542,8 +542,8 @@ export class EventsService {
   }
 
   // RSVP functionality
-  static async rsvpToEvent(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going'): Promise<void> {
-    console.log('rsvpToEvent called with:', { eventId, userId, status });
+  static async rsvpToEvent(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going', sessionUserData?: { name?: string; email?: string }): Promise<void> {
+    console.log('rsvpToEvent called with:', { eventId, userId, status, sessionUserData });
     
     try {
       // First, check if RSVP already exists
@@ -593,7 +593,7 @@ export class EventsService {
         // Send confirmation email for new RSVPs
         try {
           console.log('Attempting to send RSVP confirmation email for user:', userId);
-          await this.sendRSVPEmail(eventId, userId, status);
+          await this.sendRSVPEmail(eventId, userId, status, sessionUserData);
         } catch (emailError) {
           console.error('Failed to send RSVP confirmation email:', emailError);
           // Don't fail the RSVP if email fails
@@ -632,7 +632,7 @@ export class EventsService {
   }
 
   // Send RSVP confirmation email
-  private static async sendRSVPEmail(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going'): Promise<void> {
+  private static async sendRSVPEmail(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going', sessionUserData?: { name?: string; email?: string }): Promise<void> {
     try {
       // Get event details
       const { data: event } = await supabase
@@ -646,27 +646,57 @@ export class EventsService {
         return;
       }
 
-      // Get user details
+      // Get user details - try database first, fallback to session data
       console.log('Looking up user details for ID:', userId);
-      const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('name, email')
-        .eq('id', userId)
-        .single();
+      let userName = 'User';
+      let userEmail = '';
+      
+      try {
+        const { data: user, error: userError } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', userId)
+          .single();
 
-      if (userError) {
-        console.error('Error looking up user:', userError);
-        return;
-      }
-
-      if (!user) {
-        console.error('User not found for email:', userId);
-        return;
+        if (userError) {
+          console.error('Error looking up user in database:', userError);
+          // Fallback to session data
+          if (sessionUserData) {
+            userName = sessionUserData.name || 'User';
+            userEmail = sessionUserData.email || '';
+            console.log('Using session user data as fallback:', { name: userName, email: userEmail });
+          } else {
+            console.error('No session user data available, cannot send email');
+            return;
+          }
+        } else if (user) {
+          userName = user.name || 'User';
+          userEmail = user.email || '';
+          console.log('User found in database:', { name: userName, email: userEmail });
+        } else {
+          console.error('User not found in database');
+          return;
+        }
+      } catch (error) {
+        console.error('Database lookup failed, trying session data:', error);
+        // Fallback to session data
+        if (sessionUserData) {
+          userName = sessionUserData.name || 'User';
+          userEmail = sessionUserData.email || '';
+          console.log('Using session user data as fallback:', { name: userName, email: userEmail });
+        } else {
+          console.error('No session user data available, cannot send email');
+          return;
+        }
       }
       
-      console.log('User found for email:', { name: user.name, email: user.email });
+      // Validate we have an email
+      if (!userEmail || !userEmail.includes('@')) {
+        console.error('No valid email found for user:', { userName, userEmail });
+        return;
+      }
 
-      // Get organizer details
+      // Get organizer details - always use noreply@budevent.se for consistency
       let organizerName = 'Event Organizer';
       let organizerEmail = 'noreply@budevent.se';
       
@@ -679,7 +709,8 @@ export class EventsService {
         
         if (organizer) {
           organizerName = organizer.name || 'Event Organizer';
-          organizerEmail = organizer.email || 'noreply@budevent.se';
+          // Always use noreply@budevent.se for sender consistency
+          organizerEmail = 'noreply@budevent.se';
         }
       }
 
@@ -704,8 +735,8 @@ export class EventsService {
         eventTime: formattedTime,
         eventLocation: event.location || undefined,
         eventDescription: event.description || undefined,
-        userName: user.name || 'User',
-        userEmail: user.email,
+        userName: userName,
+        userEmail: userEmail,
         eventId: eventId,
         eventStartISO: event.starts_at,
         organizerName,

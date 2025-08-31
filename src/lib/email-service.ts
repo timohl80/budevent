@@ -123,7 +123,7 @@ export class EmailService {
       const calendarLinks = generateCalendarLinks(event);
 
       const { data: result, error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'hello@budevent.se',
+        from: 'noreply@budevent.se', // Always use noreply@budevent.se for consistency
         to: [data.userEmail],
         subject: `You're signed up for ${data.eventName}! 🎉`,
         html: this.generateRSVPEmailHTML(data, calendarLinks),

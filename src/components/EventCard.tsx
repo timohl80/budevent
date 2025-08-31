@@ -95,7 +95,15 @@ export default function EventCard({ event }: EventCardProps) {
         name: (session.user as any).name
       });
       
-      await EventsService.rsvpToEvent(event.id, (session.user as { id: string }).id, 'going');
+      await EventsService.rsvpToEvent(
+        event.id, 
+        (session.user as { id: string }).id, 
+        'going',
+        {
+          name: (session.user as any).name,
+          email: (session.user as any).email
+        }
+      );
       setRsvpStatus('going');
       
       // Refresh the RSVP status
