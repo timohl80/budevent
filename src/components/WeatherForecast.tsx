@@ -205,6 +205,7 @@ export default function WeatherForecast({ location, onDateSelect, selectedDate }
           return (
             <button
               key={weather.date}
+              type="button"
               onClick={() => onDateSelect?.(weather.date)}
               className={`
                 relative p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105

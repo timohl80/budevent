@@ -175,13 +175,13 @@ export default function EventsPage() {
         <SearchAndFilter onFiltersChange={handleFiltersChange} />
         
         {/* Create Event Button and Active/Past Events Tabs */}
-        <div className="flex justify-center items-center gap-6 mb-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6 mb-8">
           {/* Create Event Button */}
           <Link
             href="/events/new"
-            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors shadow-lg"
+            className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3B82F6] transition-colors shadow-lg"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Create Event
@@ -191,26 +191,26 @@ export default function EventsPage() {
           <div className="bg-gray-800 rounded-lg p-1 flex">
             <button
               onClick={() => handleTabChange('active')}
-              className={`px-6 py-3 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-md transition-colors ${
                 activeTab === 'active'
                   ? 'bg-[#3B82F6] text-white shadow-lg'
                   : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }`}
             >
-              <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
               </svg>
               Active Events
             </button>
             <button
               onClick={() => handleTabChange('past')}
-              className={`px-6 py-3 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-md transition-colors ${
                 activeTab === 'past'
                   ? 'bg-[#3B82F6] text-white shadow-lg'
                   : 'text-gray-300 hover:text-white hover:bg-gray-700'
               }`}
             >
-              <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Past Events
