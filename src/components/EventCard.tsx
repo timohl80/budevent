@@ -110,7 +110,8 @@ export default function EventCard({ event }: EventCardProps) {
         return;
       }
       
-      await EventsService.rsvpToEvent(
+      console.log('🔍 Calling EventsService.rsvpToEvent...');
+      const rsvpResult = await EventsService.rsvpToEvent(
         event.id, 
         sessionUser.id, 
         'going',
@@ -119,12 +120,15 @@ export default function EventCard({ event }: EventCardProps) {
           email: sessionUser.email
         }
       );
+      console.log('🔍 RSVP result:', rsvpResult);
+      
       setRsvpStatus('going');
       
       // Refresh the RSVP status
       await checkUserRSVPStatus();
       
-      console.log('Quick RSVP completed successfully');
+      console.log('🔍 Quick RSVP completed successfully');
+      console.log('🔍 Email should have been sent to:', sessionUser.email);
     } catch (error) {
       console.error('Failed to RSVP to event:', error);
       alert('Failed to RSVP to event. Please try again.');

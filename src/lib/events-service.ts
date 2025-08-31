@@ -73,13 +73,19 @@ export class EventsService {
   }
 
   // Get events with pagination and limits to prevent timeouts
-  static async getEvents(limit: number = 20, offset: number = 0): Promise<EventLite[]> {
+  static async getEvents(limit?: number, offset: number = 0): Promise<EventLite[]> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('events')
         .select('*')
-        .order('starts_at', { ascending: true })
-        .range(offset, offset + limit - 1);
+        .order('starts_at', { ascending: true });
+      
+      // Only apply limit if specified
+      if (limit) {
+        query = query.range(offset, offset + limit - 1);
+      }
+      
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching events:', error);
@@ -90,7 +96,7 @@ export class EventsService {
         return [];
       }
 
-      console.log(`Successfully fetched ${data.length} events (limit: ${limit}, offset: ${offset})`);
+      console.log(`Successfully fetched ${data.length} events (limit: ${limit || 'none'}, offset: ${offset})`);
       
       // Get RSVP counts for all events
       const eventsWithCounts = await Promise.all(
