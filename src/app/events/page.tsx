@@ -28,9 +28,8 @@ export default function EventsPage() {
     }
   }, [status, router]);
 
-  // Fetch events effect
-  useEffect(() => {
-    async function fetchEvents() {
+  // Fetch events function
+  const fetchEvents = async () => {
       try {
         setLoading(true);
         console.log('Fetching events from database...');
@@ -42,16 +41,12 @@ export default function EventsPage() {
           new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
         );
         
+        console.log('🔍 Setting events state:', allEvents.length);
         setEvents(allEvents);
         
-        // Apply active tab filter by default (show active events)
-        const activeEvents = sortedEvents.filter(event => {
-          const eventDate = new Date(event.startsAt);
-          const now = new Date();
-          return eventDate >= now;
-        });
-        
-        setFilteredEvents(activeEvents);
+        // Show all events by default, let the tabs control filtering
+        console.log('🔍 Setting filtered events:', sortedEvents.length);
+        setFilteredEvents(sortedEvents);
       } catch (error) {
         console.error('Error fetching events:', error);
         // Set empty arrays on error to show proper error state
@@ -60,22 +55,15 @@ export default function EventsPage() {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
+  // Fetch events effect
+  useEffect(() => {
     // Only fetch events if user is authenticated
     if (status === 'authenticated') {
       fetchEvents();
     }
   }, [status]);
-
-  // Don't render anything while checking auth or redirecting
-  if (status === 'loading' || status === 'unauthenticated') {
-    return (
-      <div className="min-h-screen bg-[#111827] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
-      </div>
-    );
-  }
 
   const handleFiltersChange = useCallback(async (filters: SearchFilters) => {
     // Check if we have meaningful filters to apply
@@ -131,7 +119,29 @@ export default function EventsPage() {
     }
   }, [events, activeTab]);
 
+  // Don't render anything while checking auth or redirecting
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-[#111827] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
+      </div>
+    );
+  }
+
   const handleTabChange = (tab: 'active' | 'past') => {
+    console.log('🔍 Tab change:', tab);
+    console.log('🔍 Total events available:', events.length);
+    console.log('🔍 Events state sample:', events.slice(0, 3).map(e => ({ title: e.title, startsAt: e.startsAt })));
+    console.log('🔍 Events state full length:', events.length);
+    console.log('🔍 Events state first 5 titles:', events.slice(0, 5).map(e => e.title));
+    
+    // Safety check: if events state is empty, try to re-fetch
+    if (events.length === 0) {
+      console.log('🔍 Events state is empty, re-fetching...');
+      fetchEvents();
+      return;
+    }
+    
     setActiveTab(tab);
     
     // Re-filter events based on new tab
@@ -140,6 +150,9 @@ export default function EventsPage() {
       const now = new Date();
       return tab === 'active' ? eventDate >= now : eventDate < now;
     });
+    
+    console.log('🔍 Filtered events:', filteredByTab.length);
+    console.log('🔍 Filtered events sample:', filteredByTab.slice(0, 3).map(e => ({ title: e.title, startsAt: e.startsAt })));
     
     // Apply current sorting
     const sortedEvents = [...filteredByTab];

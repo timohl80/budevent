@@ -36,8 +36,11 @@ export default function Home() {
   useEffect(() => {
     async function fetchRecentEvents() {
       try {
+        console.log('🔍 fetchRecentEvents called for tab:', activeTab);
+        
         // Fetch all events
         const allEvents = await EventsService.getEvents();
+        console.log('🔍 Events fetched from service:', allEvents.length);
         
         let eventsToShow: EventLite[] = [];
         
@@ -54,24 +57,16 @@ export default function Home() {
             .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
             .slice(0, 3);
           
-          console.log('All events fetched:', allEvents.length);
           console.log('Upcoming events:', upcomingEvents.length);
-          console.log('Events to display:', eventsToShow.map(e => ({ title: e.title, startsAt: e.startsAt })));
         } else {
           // Show newly added events (most recently created)
           // Sort by creation date (newest first) and take the first 3
-          eventsToShow = allEvents
-            .filter(event => event.createdAt) // Only include events with creation dates
-            .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-            .slice(0, 3);
           
-          console.log('All events fetched:', allEvents.length);
-          console.log('Newly added events:', eventsToShow.length);
-          console.log('Events to display:', eventsToShow.map(e => ({ 
-            title: e.title, 
-            createdAt: e.createdAt,
-            startsAt: e.startsAt 
-          })));
+          const eventsWithCreatedAt = allEvents.filter(event => event.createdAt);
+          const sortedEvents = eventsWithCreatedAt.sort((a, b) => 
+            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+          );
+          eventsToShow = sortedEvents.slice(0, 3);
         }
         
         setRecentEvents(eventsToShow);
@@ -112,8 +107,9 @@ export default function Home() {
       
 
 
-      {/* Recent Events Section */}
-      <section className="w-full px-2 sm:px-4 lg:px-6">
+              {/* Recent Events Section */}
+        <section className="w-full px-2 sm:px-4 lg:px-6">
+
         {/* Event Type Tabs */}
         <div className="flex justify-center mb-8">
           <div className="bg-[#1F2937] rounded-lg p-1 shadow-sm border border-[#374151]">
@@ -157,7 +153,9 @@ export default function Home() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3B82F6] mx-auto"></div>
             <p className="mt-2 text-[#9CA3AF]">Loading events...</p>
           </div>
-        ) : recentEvents.length > 0 ? (
+        ) : null}
+        
+        {!loading && recentEvents.length > 0 ? (
           <div className="grid gap-6 sm:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {recentEvents.map((event) => (
               <EventCard key={event.id} event={event} />
