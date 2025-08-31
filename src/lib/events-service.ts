@@ -51,6 +51,8 @@ export class EventsService {
       userId: row.user_id || '', // Convert null to empty string to prevent issues
       externalLink: row.external_link || undefined,
       externalLinkTitle: row.external_link_title || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     };
   }
 

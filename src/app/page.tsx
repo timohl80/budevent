@@ -58,14 +58,20 @@ export default function Home() {
           console.log('Upcoming events:', upcomingEvents.length);
           console.log('Events to display:', eventsToShow.map(e => ({ title: e.title, startsAt: e.startsAt })));
         } else {
-          // Show newly added events (most recently added to the list)
-          // Since we don't have createdAt in EventLite, we'll use the order they appear in the database
-          // This will show the most recently fetched events
-          eventsToShow = allEvents.slice(0, 3);
+          // Show newly added events (most recently created)
+          // Sort by creation date (newest first) and take the first 3
+          eventsToShow = allEvents
+            .filter(event => event.createdAt) // Only include events with creation dates
+            .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
+            .slice(0, 3);
           
           console.log('All events fetched:', allEvents.length);
           console.log('Newly added events:', eventsToShow.length);
-          console.log('Events to display:', eventsToShow.map(e => ({ title: e.title, startsAt: e.startsAt })));
+          console.log('Events to display:', eventsToShow.map(e => ({ 
+            title: e.title, 
+            createdAt: e.createdAt,
+            startsAt: e.startsAt 
+          })));
         }
         
         setRecentEvents(eventsToShow);

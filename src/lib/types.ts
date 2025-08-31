@@ -16,6 +16,8 @@ export interface EventLite {
   organizerEmail?: string;
   externalLink?: string; // URL to external event page
   externalLinkTitle?: string; // Custom title for external link
+  createdAt?: string; // ISO string for when the event was created
+  updatedAt?: string; // ISO string for when the event was last updated
 }
 
 // Type for creating events (without id and userId)
