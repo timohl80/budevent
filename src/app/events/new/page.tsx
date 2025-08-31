@@ -94,6 +94,24 @@ function CreateEventForm() {
     
     console.log('Combined date and time:', time);
     
+    // Format external link URL if provided
+    const formatExternalLink = (url: string) => {
+      console.log('Formatting URL:', url);
+      if (!url) return undefined;
+      // If URL doesn't start with http:// or https://, add https://
+      if (!url.match(/^https?:\/\//)) {
+        const formattedUrl = `https://${url}`;
+        console.log('Added https://, result:', formattedUrl);
+        return formattedUrl;
+      }
+      console.log('URL already has protocol, keeping as:', url);
+      return url;
+    };
+    
+    console.log('Original externalLink:', formData.externalLink);
+    const formattedExternalLink = formatExternalLink(formData.externalLink);
+    console.log('Formatted externalLink:', formattedExternalLink);
+    
     try {
           // Add the new event to Supabase
     const newEvent = await EventsService.createEvent({
@@ -101,7 +119,7 @@ function CreateEventForm() {
       description: formData.description,
       startsAt: `${date}T${time}`, // Combine date and time
       location: formData.location,
-      externalLink: formData.externalLink || undefined,
+      externalLink: formattedExternalLink || undefined,
       externalLinkTitle: formData.externalLinkTitle || undefined,
       imageUrl: uploadedImageUrl || undefined,
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
@@ -441,15 +459,15 @@ function CreateEventForm() {
                   External Event Link
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   id="externalLink"
                   name="externalLink"
                   value={formData.externalLink}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#60A5FA] focus:border-transparent transition-all duration-200 shadow-sm"
-                  placeholder="https://example.com/event-page"
+                  placeholder="www.example.com/event-page"
                 />
-                <p className="text-sm text-gray-500">Optional: Link to external event page (Eventbrite, Meetup, etc.)</p>
+                <p className="text-sm text-gray-500">Optional: Link to external event page (Eventbrite, Meetup, etc.) - https:// will be added automatically</p>
               </div>
 
               {/* Event Image */}

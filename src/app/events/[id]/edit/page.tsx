@@ -229,7 +229,17 @@ export default function EditEventPage() {
         }
       });
 
-      // Create a client-side Supabase client with the user's session
+      // Format external link URL if provided
+      const formatExternalLink = (url: string) => {
+        if (!url) return null;
+        // If URL doesn't start with http:// or https://, add https://
+        if (!url.match(/^https?:\/\//)) {
+          return `https://${url}`;
+        }
+        return url;
+      };
+
+      // Create a client-side Supabase client for this request
       const { createClient } = await import('@supabase/supabase-js');
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -251,7 +261,7 @@ export default function EditEventPage() {
           capacity: formData.capacity ? parseInt(formData.capacity) : null,
           is_public: formData.isPublic,
           status: formData.status,
-          external_link: formData.externalLink,
+          external_link: formatExternalLink(formData.externalLink),
           external_link_title: formData.externalLinkTitle,
         })
         .eq('id', eventId)
@@ -693,15 +703,15 @@ export default function EditEventPage() {
               External Link
             </label>
             <input
-              type="url"
+              type="text"
               id="externalLink"
               name="externalLink"
               value={formData.externalLink}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
-              placeholder="https://example.com"
+              placeholder="www.example.com"
             />
-            <p className="text-sm text-[#2D3436] opacity-70">Optional: Add an external link for more information</p>
+            <p className="text-sm text-[#2D3436] opacity-70">Optional: Add an external link for more information - https:// will be added automatically</p>
           </div>
 
           <div className="space-y-2">
