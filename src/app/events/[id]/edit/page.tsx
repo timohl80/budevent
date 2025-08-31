@@ -431,94 +431,123 @@ export default function EditEventPage() {
             />
           </div>
 
-          <div className="space-y-3">
+          {/* Date and Time - Mobile-First Design */}
+          <div className="space-y-4">
             <label className="block text-sm font-medium text-[#2D3436]">
               Start Date & Time * (Swedish Time)
             </label>
             
-            {/* Combined Date & Time Picker */}
-            <div className="space-y-4">
-              {/* Date Input */}
-              <div>
-                <label htmlFor="eventDate" className="block text-sm font-medium text-[#2D3436] mb-2">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  id="eventDate"
-                  name="eventDate"
-                  required
-                  value={formData.eventDate || ''}
-                  onChange={handleDateChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-colors"
-                />
-              </div>
-              
-              {/* Time Input - Custom 24-hour Format Picker */}
-              <div>
-                <label className="block text-sm font-medium text-[#2D3436] mb-2">
-                  Time (24-hour format)
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Hour Input */}
-                  <div>
-                    <label htmlFor="eventHour" className="block text-xs font-medium text-[#2D3436] opacity-70 mb-2">
-                      Hour (00-23)
-                    </label>
-                    <input
-                      type="number"
-                      id="eventHour"
-                      name="eventHour"
-                      min="0"
-                      max="23"
-                      required
-                      value={formData.eventHour || ''}
-                      onChange={handleHourChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg"
-                      placeholder="14"
-                    />
-                  </div>
-                  
-                  {/* Minute Input */}
-                  <div>
-                    <label htmlFor="eventMinute" className="block text-xs font-medium text-[#2D3436] opacity-70 mb-2">
-                      Minute (00-59)
-                    </label>
-                    <input
-                      type="number"
-                      id="eventMinute"
-                      name="eventMinute"
-                      min="0"
-                      max="23"
-                      required
-                      value={formData.eventMinute || ''}
-                      onChange={handleMinuteChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:ring-offset-2 focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg"
-                      placeholder="30"
-                    />
-                  </div>
+            {/* Date Input */}
+            <div className="space-y-2">
+              <label htmlFor="eventDate" className="block text-sm font-medium text-[#2D3436]">
+                📅 Date
+              </label>
+              <input
+                type="date"
+                id="eventDate"
+                name="eventDate"
+                required
+                value={formData.eventDate || ''}
+                onChange={handleDateChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-all duration-200 shadow-sm text-base"
+              />
+            </div>
+            
+            {/* Time Inputs - Side by Side on larger screens */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#2D3436]">
+                🕐 Time (24-hour format)
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Hour Input */}
+                <div className="space-y-1">
+                  <label htmlFor="eventHour" className="block text-xs font-medium text-[#2D3436] opacity-70">
+                    Hour (00-23)
+                  </label>
+                  <input
+                    type="number"
+                    id="eventHour"
+                    name="eventHour"
+                    min="0"
+                    max="23"
+                    required
+                    value={formData.eventHour || ''}
+                    onChange={handleHourChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg font-medium"
+                    placeholder="14"
+                  />
                 </div>
                 
-                {/* Time Preview */}
-                {formData.eventHour && formData.eventMinute && (
-                  <div className="mt-3 p-3 bg-[#A29BFE]/10 border border-[#A29BFE]/20 rounded-lg">
-                    <div className="flex items-center justify-center space-x-2">
-                      <svg className="w-5 h-5 text-[#A29BFE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-lg font-semibold text-[#A29BFE]">
-                        {formData.eventHour.padStart(2, '0')}:{formData.eventMinute.padStart(2, '0')}
-                      </span>
-                      <span className="text-sm text-[#A29BFE]/70">Swedish Time</span>
-                    </div>
-                  </div>
-                )}
-                
-                <p className="text-sm text-[#2D3436] opacity-70 mt-2">
-                  Enter time in 24-hour format (e.g., 14 for 2 PM, 23 for 11 PM)
-                </p>
+                {/* Minute Input */}
+                <div className="space-y-1">
+                  <label htmlFor="eventMinute" className="block text-xs font-medium text-[#2D3436] opacity-70">
+                    Minute (00-59)
+                  </label>
+                  <input
+                    type="number"
+                    id="eventMinute"
+                    name="eventMinute"
+                    min="0"
+                    max="59"
+                    required
+                    value={formData.eventMinute || ''}
+                    onChange={handleMinuteChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A29BFE] focus:border-transparent transition-all duration-200 shadow-sm text-center text-lg font-medium"
+                    placeholder="30"
+                  />
+                </div>
               </div>
             </div>
+            
+            {/* Time Preview - Enhanced Design */}
+            {formData.eventHour && formData.eventMinute && (
+              <div className="p-4 bg-gradient-to-r from-[#A29BFE]/10 to-[#6C5CE7]/10 border border-[#A29BFE]/20 rounded-xl">
+                <div className="flex items-center justify-center space-x-3">
+                  <svg className="w-6 h-6 text-[#A29BFE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-2xl font-bold text-[#6C5CE7]">
+                    {formData.eventHour.padStart(2, '0')}:{formData.eventMinute.padStart(2, '0')}
+                  </span>
+                  <span className="text-sm text-[#A29BFE] font-medium bg-white px-2 py-1 rounded-full">
+                    Swedish Time
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Selected Date Display */}
+            {formData.eventDate && (
+              <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                <div className="flex items-center justify-center space-x-3">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" />
+                  </svg>
+                  <div className="text-center">
+                    <span className="text-lg font-semibold text-green-700 block">
+                      {(() => {
+                        try {
+                          const date = new Date(formData.eventDate);
+                          return date.toLocaleDateString('sv-SE', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          });
+                        } catch (e) {
+                          // Fallback for Safari
+                          const date = new Date(formData.eventDate);
+                          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                          const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                          return `${days[date.getDay()]} ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+                        }
+                      })()}
+                    </span>
+                    <span className="text-sm text-green-600 font-medium">Date Selected ✓</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Location & Weather Forecast */}
@@ -534,7 +563,6 @@ export default function EditEventPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-sm font-medium text-[#2D3436]">Location & Weather</span>
                 {formData.eventDate && (
                   <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
                     Date Selected ✓

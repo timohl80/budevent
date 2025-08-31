@@ -99,7 +99,7 @@ export default function EnhancedWeatherForecast({
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800">
-          🌤️ Weather Forecast
+          🏠 The address for the event
         </h3>
         <button
           type="button"
@@ -113,17 +113,14 @@ export default function EnhancedWeatherForecast({
       {/* Location Input */}
       <div className="mb-4">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            📍 Event Location & Address
-          </label>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Enter full address (e.g., Storgatan 15, Stockholm)"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter full address (e.g., Storgatan 15, Stockholm or Vätö, Nynäshamn)"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
             <button
               type="button"
               onClick={handleLocationSubmit}
@@ -133,9 +130,6 @@ export default function EnhancedWeatherForecast({
               {isLoading ? 'Loading...' : 'Get Weather'}
             </button>
           </div>
-          <p className="text-xs text-gray-500">
-            💡 This address will become your event's location. Enter full addresses like "Storgatan 15, Stockholm" or specific places like "Vätö, Nynäshamn"
-          </p>
         </div>
       </div>
 
