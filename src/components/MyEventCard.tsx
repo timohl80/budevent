@@ -124,19 +124,13 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            {isEventPast && (
-              <div className="absolute top-2 right-2 bg-gray-800 text-white px-2 py-1 rounded-md text-xs font-medium z-10">
-                Past Event
-              </div>
-            )}
-            {isEventToday && !isEventPast && (
-              <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-md text-xs font-medium z-10">
-                Today!
-              </div>
-            )}
-            
-            {/* Share Button - Top Right */}
-            <div className="absolute top-2 right-20 z-10">
+            {/* Status and Share Button - Top Right */}
+            <div className="absolute top-2 right-2 z-10 flex items-center space-x-2">
+              {isEventToday && !isEventPast && (
+                <div className="bg-green-600 text-white px-2 py-1 rounded-md text-xs font-medium">
+                  Today!
+                </div>
+              )}
               <ShareButton event={event} compact={true} />
             </div>
           </div>
@@ -156,52 +150,20 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
           <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 mr-3">
             {event.title}
           </h3>
-          <div className="flex flex-col items-end space-y-2">
-            {/* Owner Warning */}
-            {!event.userId && (
-              <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
-                ⚠️ No Owner
-              </div>
-            )}
-            {/* Event Status */}
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${
-              event.status === 'active' 
-                ? 'bg-green-100 text-green-800 border-green-300' 
-                : event.status === 'cancelled' 
-                ? 'bg-red-100 text-red-800 border-red-300' 
-                : 'bg-gray-100 text-gray-800 border-gray-300'
-            }`}>
-              {event.status === 'active' ? '🟢 Active' : event.status === 'cancelled' ? '🔴 Cancelled' : '⚫ Completed'}
+          {/* Simplified Status - Only show if cancelled */}
+          {event.status === 'cancelled' && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+              Cancelled
             </span>
-          </div>
+          )}
         </div>
         
-        {/* Date & Time with Weather */}
-        <div className="flex items-center justify-between text-gray-700 mb-3">
-          <div className="flex items-center">
-            <svg className="w-4 h-4 mr-2 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="font-medium">{formatDateTime(event.startsAt)}</span>
-          </div>
-          
-          {/* Weather Symbol */}
-          {weatherData && (
-            <div className="flex items-center space-x-1 text-xs">
-              <span className="text-lg" title={`${weatherData.description}: ${weatherData.temperature.max}°C, ${weatherData.precipitation.chance}% rain`}>
-                {weatherData.weatherIcon}
-              </span>
-              <span className="text-gray-500">
-                {weatherData.temperature.max}°
-              </span>
-            </div>
-          )}
-          {weatherLoading && (
-            <div className="flex items-center space-x-1 text-xs text-gray-400">
-              <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
-              <span>Loading weather...</span>
-            </div>
-          )}
+        {/* Date & Time */}
+        <div className="flex items-center text-gray-700 mb-3">
+          <svg className="w-4 h-4 mr-2 text-[#60A5FA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="font-medium">{formatDateTime(event.startsAt)}</span>
         </div>
         
         {/* Location */}
@@ -262,7 +224,7 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
           </div>
         )}
         
-        {/* Event Stats */}
+        {/* Event Stats - Simplified */}
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
@@ -279,48 +241,40 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
             </span>
           </div>
           
-          {/* Event Status Indicators */}
-          <div className="flex items-center space-x-2">
-            {isEventPast && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300">
-                Past Event
-              </span>
-            )}
-            {isEventToday && !isEventPast && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
-                Today!
-              </span>
-            )}
-          </div>
+          {/* Only show Today indicator */}
+          {isEventToday && !isEventPast && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+              Today!
+            </span>
+          )}
         </div>
         
-        {/* Action Buttons */}
-        <div className="flex space-x-2">
+        {/* Action Buttons - Mobile Optimized */}
+        <div className="space-y-3">
+          {/* Primary Action */}
           <Link
             href={`/events/${event.id}`}
-            className="flex-1 py-2 px-3 bg-[#60A5FA] text-white rounded-lg text-sm font-medium hover:bg-[#4B89E8] transition-colors text-center"
+            className="block w-full py-2 px-4 bg-[#60A5FA] text-white rounded-lg text-sm font-medium hover:bg-[#4B89E8] transition-colors text-center"
           >
             View Event Details
           </Link>
           
-
-          
-          <Link
-            href={`/events/${event.id}/edit`}
-            className="py-2 px-3 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            Edit Event
-          </Link>
-          
-
-          
-          <button
-            onClick={handleDeleteEvent}
-            disabled={isLoading}
-            className="py-2 px-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-          >
-            {isLoading ? 'Deleting...' : 'Delete'}
-          </button>
+          {/* Secondary Actions */}
+          <div className="flex space-x-2">
+            <Link
+              href={`/events/${event.id}/edit`}
+              className="flex-1 py-2 px-3 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors text-center"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={handleDeleteEvent}
+              disabled={isLoading}
+              className="flex-1 py-2 px-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+            >
+              {isLoading ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
         </div>
         
 
