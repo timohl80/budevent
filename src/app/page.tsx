@@ -105,10 +105,21 @@ export default function Home() {
         </p>
       </div>
       
+      {/* Create Event Button */}
+      <div className="text-center mb-6">
+        <Link
+          href="/events/new"
+          className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#3B82F6] to-[#DB2777] rounded-lg hover:from-[#DB2777] hover:to-[#3B82F6] transition-all duration-300"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Create Event
+        </Link>
+      </div>
 
-
-              {/* Recent Events Section */}
-        <section className="w-full px-2 sm:px-4 lg:px-6">
+      {/* Recent Events Section */}
+      <section className="w-full px-2 sm:px-4 lg:px-6">
 
         {/* Event Type Tabs */}
         <div className="flex justify-center mb-6">
