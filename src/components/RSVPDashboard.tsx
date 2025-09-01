@@ -71,48 +71,50 @@ export default function RSVPDashboard({
     return (
       <div className="space-y-6">
         {/* RSVP Filter Tabs */}
-        <div className="flex justify-center">
-          <div className="bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-            <button
-              onClick={() => setRsvpFilter('all')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                rsvpFilter === 'all'
-                  ? 'bg-[#A29BFE] text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              All ({userRSVPs.length})
-            </button>
-            <button
-              onClick={() => setRsvpFilter('going')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                rsvpFilter === 'going'
-                  ? 'bg-green-500 text-white shadow-sm'
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              }`}
-            >
-              Going ({goingRSVPs.length})
-            </button>
-            <button
-              onClick={() => setRsvpFilter('maybe')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                rsvpFilter === 'maybe'
-                  ? 'bg-yellow-500 text-white shadow-sm'
-                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-              }`}
-            >
-              Maybe ({maybeRSVPs.length})
-            </button>
-            <button
-              onClick={() => setRsvpFilter('not_going')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                rsvpFilter === 'not_going'
-                  ? 'bg-red-500 text-white shadow-sm'
-                  : 'bg-red-100 text-red-700 hover:bg-red-200'
-              }`}
-            >
-              Not Going ({notGoingRSVPs.length})
-            </button>
+        <div className="px-4 py-3">
+          <div className="bg-white rounded-lg p-2 shadow-sm border border-gray-200">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setRsvpFilter('all')}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  rsvpFilter === 'all'
+                    ? 'bg-[#A29BFE] text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                All ({userRSVPs.length})
+              </button>
+              <button
+                onClick={() => setRsvpFilter('going')}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  rsvpFilter === 'going'
+                    ? 'bg-green-500 text-white shadow-sm'
+                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                }`}
+              >
+                Going ({goingRSVPs.length})
+              </button>
+              <button
+                onClick={() => setRsvpFilter('maybe')}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  rsvpFilter === 'maybe'
+                    ? 'bg-yellow-500 text-white shadow-sm'
+                    : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                }`}
+              >
+                Maybe ({maybeRSVPs.length})
+              </button>
+              <button
+                onClick={() => setRsvpFilter('not_going')}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  rsvpFilter === 'not_going'
+                    ? 'bg-red-500 text-white shadow-sm'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                }`}
+              >
+                Not Going ({notGoingRSVPs.length})
+              </button>
+            </div>
           </div>
         </div>
 
