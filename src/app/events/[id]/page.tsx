@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { EventLite } from '@/lib/types';
 import { EventsService } from '@/lib/events-service';
@@ -12,6 +12,7 @@ import { SMHIWeatherService, WeatherData } from '@/lib/weather-service';
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [event, setEvent] = useState<EventLite | null>(null);
   const [loading, setLoading] = useState(true);
@@ -385,6 +386,24 @@ export default function EventDetailPage() {
       background: 'linear-gradient(135deg, #F8F7FF 0%, #FEF3C7 50%, #F8F7FF 100%)'
     }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        
+        {/* Invitation Banner */}
+        {searchParams.get('invited') === 'true' && session && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900">You've been invited to this event!</h3>
+                <p className="text-blue-700 text-sm">Welcome! You can now view the event details and RSVP below.</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Back Button */}
         <div className="mb-4 sm:mb-6">
           <Link
@@ -597,13 +616,35 @@ export default function EventDetailPage() {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-gray-600 mb-4">Sign in to RSVP to this event</p>
-                  <Link
-                    href="/auth"
-                    className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
-                  >
-                    Sign In
-                  </Link>
+                  {searchParams.get('invited') === 'true' ? (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-center space-x-2 mb-2">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                          </svg>
+                          <p className="text-blue-800 font-medium">You've been invited to this event!</p>
+                        </div>
+                        <p className="text-blue-700 text-sm">Sign in to view the event details and RSVP</p>
+                      </div>
+                      <Link
+                        href={`/auth?callbackUrl=${encodeURIComponent(`/events/${eventId}?invited=true`)}`}
+                        className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
+                      >
+                        Sign In to View Event
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-gray-600">Sign in to RSVP to this event</p>
+                      <Link
+                        href={`/auth?callbackUrl=${encodeURIComponent(`/events/${eventId}`)}`}
+                        className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-[#7C3AED] rounded-lg hover:bg-[#6D28D9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7C3AED] transition-colors"
+                      >
+                        Sign In
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -44,6 +44,7 @@
 - [ ] Test event creation with invitations
 - [ ] Verify email delivery works
 - [ ] Test invitation response functionality
+- [ ] Test invitation link redirect flow (login → event page)
 - [ ] Check that `/test-invitations` page works
 - [ ] Verify no console errors in production
 
@@ -106,6 +107,7 @@ Consider implementing more restrictive RLS policies:
 - How to respond to invitations
 - How to view invitation status
 - How to access event details
+- How invitation links work (login redirect)
 
 ## 🔄 **Rollback Plan**
 
@@ -121,6 +123,8 @@ After deployment, verify:
 - [ ] Event creation works with and without invitations
 - [ ] Invitation emails are delivered
 - [ ] Users can respond to invitations
+- [ ] Invitation links redirect properly after login
+- [ ] Invitation banner shows for invited users
 - [ ] No console errors in production
 - [ ] Database queries perform well
 - [ ] Email service is reliable

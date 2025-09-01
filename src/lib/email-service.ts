@@ -1101,7 +1101,7 @@ export class EmailService {
             <p>Ready to join us? Click the button below to view the event and RSVP:</p>
             
             <div style="text-align: center;">
-              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/events/${data.eventId}" class="cta-button">
+              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/events/${data.eventId}?invited=true" class="cta-button">
                 View Event & RSVP
               </a>
             </div>

@@ -32,9 +32,10 @@ function WelcomeContent() {
   // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      router.push('/');
+      const redirectUrl = callbackUrl || '/';
+      router.push(redirectUrl);
     }
-  }, [status, session, router]);
+  }, [status, session, router, callbackUrl]);
 
   // Log OAuth errors for debugging
   useEffect(() => {
@@ -70,7 +71,8 @@ function WelcomeContent() {
       } else {
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => {
-          router.push('/');
+          const redirectUrl = callbackUrl || '/';
+          router.push(redirectUrl);
         }, 1000);
       }
     } catch (error) {
@@ -263,7 +265,8 @@ function WelcomeContent() {
               
               // Try to sign in and catch any errors
               try {
-                signIn('google', { callbackUrl: '/' });
+                const redirectUrl = callbackUrl || '/';
+                signIn('google', { callbackUrl: redirectUrl });
               } catch (error) {
                 console.error('Error starting Google Sign-In:', error);
               }
