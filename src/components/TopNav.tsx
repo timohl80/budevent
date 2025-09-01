@@ -140,7 +140,7 @@ export default function TopNav() {
               </span>
               <button 
                 onClick={handleSignOut}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#DB2777] rounded-lg hover:bg-[#BE185D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DB2777] transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm text-[#F3F4F6] bg-[#374151] hover:text-[#DB2777] hover:bg-[#4B5563] rounded-lg transition-colors"
               >
                 Sign out
               </button>
@@ -245,7 +245,7 @@ export default function TopNav() {
                 </div>
                 <button 
                   onClick={handleSignOut}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-[#DB2777] hover:bg-[#374151] rounded-lg transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-[#F3F4F6] bg-[#374151] hover:text-[#DB2777] hover:bg-[#4B5563] rounded-lg transition-colors"
                 >
                   Sign out
                 </button>

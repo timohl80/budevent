@@ -48,6 +48,114 @@ export class SMHIWeatherService {
   }
 
   /**
+   * Get weather forecast for a specific event date
+   * Returns forecast if available, or seasonal estimate if too far in future
+   */
+  static async getEventWeather(coordinates: LocationCoordinates, eventDate: string): Promise<WeatherData | null> {
+    try {
+      const forecast = await this.getForecast(coordinates);
+      const eventDateObj = new Date(eventDate);
+      const eventDateString = eventDateObj.toISOString().split('T')[0];
+      
+      // Try to find exact weather data for the event date
+      const eventWeather = forecast.find(weather => weather.date === eventDateString);
+      if (eventWeather) {
+        console.log('Found exact weather forecast for event date:', eventDateString);
+        return eventWeather;
+      }
+      
+      // If event is more than 15 days away, provide seasonal estimate
+      const today = new Date();
+      const daysUntilEvent = Math.ceil((eventDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      console.log(`Event is ${daysUntilEvent} days away, forecast available for ${forecast.length} days`);
+      
+      if (daysUntilEvent > 15) {
+        const seasonalEstimate = this.getSeasonalEstimate(coordinates, eventDateObj);
+        console.log('Returning seasonal estimate:', seasonalEstimate);
+        return seasonalEstimate;
+      }
+      
+      console.log('Event within 15 days but no forecast available');
+      return null;
+    } catch (error) {
+      console.error('Error fetching event weather:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if weather data should be refreshed based on event date
+   * Returns true if event is now within 15 days and was previously showing seasonal estimate
+   */
+  static shouldRefreshWeather(eventDate: string, currentWeatherData: WeatherData | null): boolean {
+    if (!currentWeatherData) return true;
+    
+    const eventDateObj = new Date(eventDate);
+    const today = new Date();
+    const daysUntilEvent = Math.ceil((eventDateObj.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // If event is now within 15 days and current data is a seasonal estimate, refresh
+    if (daysUntilEvent <= 15 && currentWeatherData.description.includes('seasonal estimate')) {
+      return true;
+    }
+    
+    // If event is within 3 days, refresh more frequently for accuracy
+    if (daysUntilEvent <= 3) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Generate seasonal weather estimate for events far in the future
+   */
+  static getSeasonalEstimate(coordinates: LocationCoordinates, eventDate: Date): WeatherData {
+    const month = eventDate.getMonth();
+    const isSummer = month >= 5 && month <= 8; // June to September
+    const isWinter = month >= 11 || month <= 2; // December to February
+    const isSpring = month >= 3 && month <= 5; // March to May
+    const isAutumn = month >= 9 && month <= 11; // September to November
+    
+    // Stockholm seasonal averages
+    let temperature, precipitation, description, weatherIcon;
+    
+    if (isSummer) {
+      temperature = { min: 12, max: 22 };
+      precipitation = { chance: 30, amount: 2 };
+      description = "Typical summer weather";
+      weatherIcon = "☀️";
+    } else if (isWinter) {
+      temperature = { min: -3, max: 2 };
+      precipitation = { chance: 40, amount: 1 };
+      description = "Typical winter weather";
+      weatherIcon = "❄️";
+    } else if (isSpring) {
+      temperature = { min: 2, max: 12 };
+      precipitation = { chance: 35, amount: 1.5 };
+      description = "Typical spring weather";
+      weatherIcon = "🌸";
+    } else { // Autumn
+      temperature = { min: 4, max: 14 };
+      precipitation = { chance: 45, amount: 2.5 };
+      description = "Typical autumn weather";
+      weatherIcon = "🍂";
+    }
+    
+    return {
+      date: eventDate.toISOString().split('T')[0],
+      temperature,
+      precipitation,
+      wind: { speed: 3, direction: "SW" },
+      cloudCover: 60,
+      sunshine: isSummer ? 8 : isWinter ? 2 : 5,
+      weatherIcon,
+      description: `${description} (seasonal estimate)`
+    };
+  }
+
+  /**
    * Parse SMHI API response into our WeatherData format
    */
   private static parseWeatherData(apiData: any): WeatherData[] {
@@ -73,10 +181,10 @@ export class SMHIWeatherService {
       });
     });
 
-    // Sort by date and return next 10 days
+    // Sort by date and return next 15 days (SMHI provides up to 15 days)
     return weatherData
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 10);
+      .slice(0, 15);
   }
 
   /**

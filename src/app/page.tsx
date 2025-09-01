@@ -136,11 +136,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-[#F3F4F6]">
-            {activeTab === 'upcoming' ? 'Upcoming Events' : 'Newly Added Events'}
-          </h2>
-        </div>
+
         
         {loading ? (
           <div className="text-center py-8">

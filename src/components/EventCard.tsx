@@ -43,6 +43,26 @@ export default function EventCard({ event }: EventCardProps) {
       fetchWeatherData();
     }
   }, [event.location, event.startsAt]);
+
+  // Check if weather should be refreshed periodically
+  useEffect(() => {
+    if (!event.location) return;
+
+    const checkWeatherRefresh = () => {
+      if (SMHIWeatherService.shouldRefreshWeather(event.startsAt, weatherData)) {
+        console.log('Weather data should be refreshed for event:', event.title);
+        fetchWeatherData();
+      }
+    };
+
+    // Check immediately
+    checkWeatherRefresh();
+
+    // Set up interval to check every hour
+    const interval = setInterval(checkWeatherRefresh, 60 * 60 * 1000); // 1 hour
+
+    return () => clearInterval(interval);
+  }, [event.startsAt, event.location]); // Removed weatherData from dependencies
   
   const checkUserRSVPStatus = async () => {
     if (!session?.user) return;
@@ -65,16 +85,26 @@ export default function EventCard({ event }: EventCardProps) {
     
     try {
       setWeatherLoading(true);
+      console.log('Fetching weather for event:', event.title, 'at location:', event.location);
       const coords = await SMHIWeatherService.getCoordinatesFromLocation(event.location);
+      console.log('Got coordinates:', coords);
       if (coords) {
-        const forecast = await SMHIWeatherService.getForecast(coords);
-        const eventDate = new Date(event.startsAt);
-        const eventDateString = eventDate.toISOString().split('T')[0];
-        
-        // Find weather data for the event date
-        const eventWeather = forecast.find(weather => weather.date === eventDateString);
+        const eventWeather = await SMHIWeatherService.getEventWeather(coords, event.startsAt);
+        console.log('Got weather data:', eventWeather);
         if (eventWeather) {
           setWeatherData(eventWeather);
+        } else {
+          console.log('No weather data returned, trying seasonal estimate for event:', event.title);
+          // Fallback: try to get seasonal estimate directly
+          const eventDate = new Date(event.startsAt);
+          const today = new Date();
+          const daysUntilEvent = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (daysUntilEvent > 15) {
+            const seasonalEstimate = SMHIWeatherService.getSeasonalEstimate(coords, eventDate);
+            console.log('Using seasonal estimate:', seasonalEstimate);
+            setWeatherData(seasonalEstimate);
+          }
         }
       }
     } catch (error) {
@@ -264,7 +294,12 @@ export default function EventCard({ event }: EventCardProps) {
           </div>
           
           {/* Weather Symbol */}
-          {weatherData && (
+          {weatherLoading ? (
+            <div className="flex items-center space-x-1 text-xs text-gray-400">
+              <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
+              <span>Loading...</span>
+            </div>
+          ) : weatherData ? (
             <div className="flex items-center space-x-1 text-xs">
               <span className="text-lg" title={`${weatherData.description}: ${weatherData.temperature.max}°C, ${weatherData.precipitation.chance}% rain`}>
                 {weatherData.weatherIcon}
@@ -273,13 +308,11 @@ export default function EventCard({ event }: EventCardProps) {
                 {weatherData.temperature.max}°
               </span>
             </div>
-          )}
-          {weatherLoading && (
+          ) : event.location ? (
             <div className="flex items-center space-x-1 text-xs text-gray-400">
-              <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-400"></div>
-              <span>Loading weather...</span>
+              <span className="text-lg">🌤️</span>
             </div>
-          )}
+          ) : null}
         </div>
         
         {/* Location */}

@@ -79,12 +79,7 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
       setWeatherLoading(true);
       const coords = await SMHIWeatherService.getCoordinatesFromLocation(event.location);
       if (coords) {
-        const forecast = await SMHIWeatherService.getForecast(coords);
-        const eventDate = new Date(event.startsAt);
-        const eventDateString = eventDate.toISOString().split('T')[0];
-        
-        // Find weather data for the event date
-        const eventWeather = forecast.find(weather => weather.date === eventDateString);
+        const eventWeather = await SMHIWeatherService.getEventWeather(coords, event.startsAt);
         if (eventWeather) {
           setWeatherData(eventWeather);
         }
@@ -96,12 +91,32 @@ export default function MyEventCard({ event, onRefresh }: MyEventCardProps) {
     }
   };
 
-  // Fetch weather data when component mounts
+  // Fetch weather data when component mounts and check for updates
   useEffect(() => {
     if (event.location) {
       fetchWeatherData();
     }
   }, [event.location, event.startsAt]);
+
+  // Check if weather should be refreshed periodically
+  useEffect(() => {
+    if (!event.location) return;
+
+    const checkWeatherRefresh = () => {
+      if (SMHIWeatherService.shouldRefreshWeather(event.startsAt, weatherData)) {
+        console.log('Weather data should be refreshed for event:', event.title);
+        fetchWeatherData();
+      }
+    };
+
+    // Check immediately
+    checkWeatherRefresh();
+
+    // Set up interval to check every hour
+    const interval = setInterval(checkWeatherRefresh, 60 * 60 * 1000); // 1 hour
+
+    return () => clearInterval(interval);
+  }, [event.startsAt, event.location]); // Removed weatherData from dependencies
 
   const isEventPast = new Date(event.startsAt) < new Date();
   const isEventToday = new Date(event.startsAt).toDateString() === new Date().toDateString();

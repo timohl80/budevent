@@ -39,18 +39,33 @@ export default function EventDetailPage() {
     }
   }, [event?.location, event?.startsAt]);
 
+  // Check if weather should be refreshed periodically
+  useEffect(() => {
+    if (!event?.location) return;
+
+    const checkWeatherRefresh = () => {
+      if (SMHIWeatherService.shouldRefreshWeather(event.startsAt, weatherData)) {
+        console.log('Weather data should be refreshed for event:', event.title);
+        fetchWeatherData(event.location, event.startsAt);
+      }
+    };
+
+    // Check immediately
+    checkWeatherRefresh();
+
+    // Set up interval to check every hour
+    const interval = setInterval(checkWeatherRefresh, 60 * 60 * 1000); // 1 hour
+
+    return () => clearInterval(interval);
+  }, [event?.startsAt, event?.location]); // Removed weatherData from dependencies
+
   const fetchWeatherData = async (location: string, eventDate: string) => {
     try {
       setWeatherLoading(true);
       const coordinates = await SMHIWeatherService.getCoordinatesFromLocation(location);
       
       if (coordinates) {
-        const forecast = await SMHIWeatherService.getForecast(coordinates);
-        const eventDateObj = new Date(eventDate);
-        const eventDateString = eventDateObj.toISOString().split('T')[0];
-        
-        // Find weather data for the event date
-        const eventWeather = forecast.find(day => day.date === eventDateString);
+        const eventWeather = await SMHIWeatherService.getEventWeather(coordinates, eventDate);
         if (eventWeather) {
           setWeatherData(eventWeather);
         }
@@ -468,7 +483,12 @@ export default function EventDetailPage() {
                     </div>
                     
                     {/* Weather Icon */}
-                    {weatherData && (
+                    {weatherLoading ? (
+                      <div className="flex items-center space-x-2 text-sm text-gray-400">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b border-gray-400"></div>
+                        <span>Loading weather...</span>
+                      </div>
+                    ) : weatherData ? (
                       <div className="flex items-center space-x-2 text-sm">
                         <span className="text-2xl" title={`${weatherData.description}: ${weatherData.temperature.max}°C, ${weatherData.precipitation.chance}% rain`}>
                           {weatherData.weatherIcon}
@@ -477,13 +497,7 @@ export default function EventDetailPage() {
                           {weatherData.temperature.max}°
                         </span>
                       </div>
-                    )}
-                    {weatherLoading && (
-                      <div className="flex items-center space-x-2 text-sm text-gray-400">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b border-gray-400"></div>
-                        <span>Loading weather...</span>
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
                 
