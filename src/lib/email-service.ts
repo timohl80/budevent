@@ -50,6 +50,7 @@ export interface EventEmailData {
   eventEndISO?: string; // ISO string for calendar
   organizerName?: string;
   organizerEmail?: string;
+  invitationMessage?: string; // Optional personal message from inviter
 }
 
 export class EmailService {
@@ -773,6 +774,369 @@ export class EmailService {
           
           <div class="footer">
             <p>This email was sent from <strong>BudEvent</strong></p>
+            <p>© 2025 BudEvent. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Send event invitation email to user
+   */
+  static async sendEventInvitation(data: EventEmailData): Promise<boolean> {
+    console.log('EmailService.sendEventInvitation called with data:', data);
+    
+    // Validate email data
+    if (!data.userEmail || !data.userEmail.includes('@')) {
+      console.error('Invalid user email:', data.userEmail);
+      return false;
+    }
+    
+    if (!resend) {
+      console.error('Resend client not initialized - missing API key');
+      return false;
+    }
+
+    try {
+      // Validate that we have a valid ISO date for calendar functionality
+      if (!data.eventStartISO || isNaN(new Date(data.eventStartISO).getTime())) {
+        console.error('Invalid eventStartISO date:', data.eventStartISO);
+        // Continue without calendar functionality rather than failing completely
+      }
+
+      // Generate calendar data - use ISO dates for calendar functionality
+      const event = {
+        title: data.eventName,
+        description: data.eventDescription,
+        startsAt: data.eventStartISO || new Date().toISOString(), // Fallback to current time if no ISO date
+        endsAt: data.eventEndISO || new Date(new Date(data.eventStartISO || new Date()).getTime() + 2 * 60 * 60 * 1000).toISOString(), // Default 2 hours later
+        location: data.eventLocation,
+        organizerName: data.organizerName,
+        organizerEmail: data.organizerEmail
+      };
+
+      let calendarLinks: ReturnType<typeof generateCalendarLinks> | undefined = undefined;
+      
+      try {
+        calendarLinks = generateCalendarLinks(event);
+      } catch (calendarError) {
+        console.error('Error generating calendar content:', calendarError);
+        // Continue without calendar functionality
+        calendarLinks = undefined;
+      }
+
+      const emailData: any = {
+        from: 'noreply@budevent.se', // Always use noreply@budevent.se for consistency
+        to: [data.userEmail],
+        subject: `🎉 You're invited to ${data.eventName}!`,
+        html: this.generateInvitationEmailHTML(data, calendarLinks),
+      };
+
+      console.log('🔍 Attempting to send invitation email with data:', {
+        from: emailData.from,
+        to: emailData.to,
+        subject: emailData.subject,
+        hasAttachments: false
+      });
+
+      const { data: result, error } = await resend.emails.send(emailData);
+
+      if (error) {
+        console.error('🔍 Resend API error:', error);
+        console.error('🔍 Error details:', JSON.stringify(error, null, 2));
+        return false;
+      }
+
+      console.log('🔍 Event invitation email sent successfully:', result?.id);
+      return true;
+    } catch (error) {
+      console.error('🔍 Exception in sendEventInvitation:', error);
+      console.error('🔍 Error type:', typeof error);
+      console.error('🔍 Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('🔍 Full error object:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Generate beautiful HTML email for event invitation
+   */
+  private static generateInvitationEmailHTML(data: EventEmailData, calendarLinks?: ReturnType<typeof generateCalendarLinks>): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Event Invitation - ${data.eventName}</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2D3436;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+          }
+          .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+          }
+          .content {
+            padding: 40px 30px;
+          }
+          .event-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #60A5FA;
+          }
+          .event-details h2 {
+            margin: 0 0 20px 0;
+            color: #2D3436;
+            font-size: 20px;
+            font-weight: 600;
+          }
+          .detail-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+          }
+          .detail-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            color: #A29BFE;
+            flex-shrink: 0;
+          }
+          .detail-text {
+            flex: 1;
+            font-size: 16px;
+            color: #2D3436;
+          }
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 25px 0;
+            transition: transform 0.2s ease;
+          }
+          .cta-button:hover {
+            transform: translateY(-2px);
+          }
+          .invitation-message {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border: 1px solid #60A5FA;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            font-style: italic;
+            color: #1E40AF;
+          }
+          .calendar-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            border: 1px solid #e9ecef;
+          }
+          .calendar-section h3 {
+            color: #60A5FA;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+          }
+          .calendar-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+          }
+          .calendar-button {
+            display: inline-block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+          }
+          .calendar-button:hover {
+            opacity: 0.9;
+          }
+          .calendar-button.google { background-color: #4285F4; }
+          .calendar-button.outlook { background-color: #0078D4; }
+          .calendar-button.apple { background-color: #555555; }
+          .footer {
+            background-color: #f8f9fa;
+            padding: 25px 30px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+          }
+          .footer p {
+            margin: 0;
+            color: #60A5FA;
+            font-size: 14px;
+            font-weight: 500;
+          }
+          .footer a {
+            color: #60A5FA;
+            text-decoration: none;
+            font-weight: 500;
+          }
+          @media (max-width: 600px) {
+            .container {
+              margin: 10px;
+              border-radius: 8px;
+            }
+            .header, .content, .footer {
+              padding: 25px 20px;
+            }
+            .header h1 {
+              font-size: 24px;
+            }
+            .calendar-buttons {
+              flex-direction: column;
+              align-items: center;
+            }
+            .calendar-button {
+              width: 100%;
+              max-width: 200px;
+              text-align: center;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 You're Invited!</h1>
+            <p>${data.organizerName || 'Someone'} has invited you to an event</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hi ${data.userName},</h2>
+            <p>You've been invited to join <strong>${data.eventName}</strong>! We'd love to have you there.</p>
+            
+            ${data.invitationMessage ? `
+            <div class="invitation-message">
+              <strong>Personal message from ${data.organizerName || 'the organizer'}:</strong><br>
+              "${data.invitationMessage}"
+            </div>
+            ` : ''}
+            
+            <div class="event-details">
+              <h2>Event Details</h2>
+              
+              <div class="detail-row">
+                <div class="detail-icon">📅</div>
+                <div class="detail-text">
+                  <strong>Date:</strong> ${data.eventDate}
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-icon">🕒</div>
+                <div class="detail-text">
+                  <strong>Time:</strong> ${data.eventTime}
+                </div>
+              </div>
+              
+              ${data.eventLocation ? `
+              <div class="detail-row">
+                <div class="detail-icon">📍</div>
+                <div class="detail-text">
+                  <strong>Location:</strong> ${data.eventLocation}
+                </div>
+              </div>
+              ` : ''}
+              
+              ${data.eventDescription ? `
+              <div class="detail-row">
+                <div class="detail-icon">📝</div>
+                <div class="detail-text">
+                  <strong>Description:</strong> ${data.eventDescription}
+                </div>
+              </div>
+              ` : ''}
+            </div>
+            
+            <p>Ready to join us? Click the button below to view the event and RSVP:</p>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3002'}/events/${data.eventId}" class="cta-button">
+                View Event & RSVP
+              </a>
+            </div>
+            
+            ${calendarLinks ? `
+            <div class="calendar-section">
+              <h3>📱 Add to Your Calendar</h3>
+              
+              <div class="calendar-buttons">
+                <a href="${calendarLinks.google}" target="_blank" class="calendar-button google">
+                  📅 Google Calendar
+                </a>
+                
+                <a href="${calendarLinks.outlook}" target="_blank" class="calendar-button outlook">
+                  📅 Outlook
+                </a>
+                
+                <a href="${calendarLinks.apple}" target="_blank" class="calendar-button apple">
+                  📅 Apple Calendar
+                </a>
+              </div>
+              
+              <p style="color: #6B7280; font-size: 14px; text-align: center; margin: 0;">
+                💡 <strong>Pro Tip:</strong> Add this to your calendar so you don't miss it!
+              </p>
+            </div>
+            ` : ''}
+            
+            <p style="margin-top: 25px; font-size: 14px; color: #6c757d;">
+              If you have any questions about this event, feel free to reach out to ${data.organizerName || 'the organizer'}.
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p>This invitation was sent from <strong>BudEvent</strong></p>
             <p>© 2025 BudEvent. All rights reserved.</p>
           </div>
         </div>

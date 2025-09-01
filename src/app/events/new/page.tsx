@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import { SimpleStorageService } from '@/lib/simple-storage-service';
 import ImageUpload from '@/components/ImageUpload';
 import EnhancedWeatherForecast from '@/components/EnhancedWeatherForecast';
+import UserInvitationSelector from '@/components/UserInvitationSelector';
 
 export default function CreateEventPage() {
   return <CreateEventForm />;
@@ -34,6 +35,8 @@ function CreateEventForm() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [tempEventId, setTempEventId] = useState<string>('');
   const [showWeatherForecast, setShowWeatherForecast] = useState(true);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [invitationMessage, setInvitationMessage] = useState<string>('');
   
   // Generate a temporary event ID when component mounts
   useEffect(() => {
@@ -128,6 +131,38 @@ function CreateEventForm() {
     }, (session.user as any).id);
       
       console.log('Event created successfully');
+
+      // Send invitations if users are selected
+      if (selectedUserIds.length > 0) {
+        try {
+          const inviteResponse = await fetch('/api/events/invite', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              eventId: newEvent.id,
+              invitedUserIds: selectedUserIds,
+              message: invitationMessage || undefined,
+            }),
+          });
+
+          if (inviteResponse.ok) {
+            const inviteResult = await inviteResponse.json();
+            // Show success message to user
+            alert(`✅ Event created and invitations sent to ${inviteResult.emailResults.successful} users!`);
+          } else {
+            const errorResult = await inviteResponse.json();
+            console.error('Failed to send invitations:', errorResult);
+            // Show warning but don't fail the event creation
+            alert(`⚠️ Event created successfully, but some invitations failed to send. Check console for details.`);
+          }
+        } catch (inviteError) {
+          console.error('Error sending invitations:', inviteError);
+          // Show warning but don't fail the event creation
+          alert(`⚠️ Event created successfully, but invitations failed to send. Check console for details.`);
+        }
+      }
     } catch (error) {
       console.error('Error in form submission:', error);
       setIsSubmitting(false);
@@ -534,6 +569,14 @@ function CreateEventForm() {
                   </label>
                 </div>
               </div>
+
+              {/* User Invitations */}
+              <UserInvitationSelector
+                selectedUserIds={selectedUserIds}
+                onSelectionChange={setSelectedUserIds}
+                onMessageChange={setInvitationMessage}
+                invitationMessage={invitationMessage}
+              />
 
               {/* Action Buttons */}
               <div className="flex gap-4 pt-6 border-t border-gray-200">
