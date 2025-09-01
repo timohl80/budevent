@@ -87,7 +87,8 @@ export default function ShareButton({ event, className = '', compact = false }: 
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(eventUrl)}`;
         break;
       case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(`${eventTitle} - ${eventDate}${event.location ? ` at ${event.location}` : ''} ${eventUrl}`)}`;
+        const whatsappText = `${eventTitle}\n\n📅 ${eventDate}${event.location ? `\n📍 ${event.location}` : ''}\n\n${eventDescription}\n\n🔗 ${eventUrl}`;
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
         break;
       case 'telegram':
         shareUrl = `https://t.me/share/url?url=${encodeURIComponent(eventUrl)}&text=${encodeURIComponent(`${eventTitle} - ${eventDate}${event.location ? ` at ${event.location}` : ''}`)}`;
