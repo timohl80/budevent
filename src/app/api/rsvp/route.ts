@@ -19,15 +19,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract user ID from session
-    const user = session.user;
-    const userId = (user as any).id || user.email;
+    const userId = (session.user as any).id;
     
     if (!userId) {
       return NextResponse.json({ error: 'Could not identify user' }, { status: 400 });
     }
 
+    // Prepare session user data for email sending
+    const sessionUserData = {
+      name: (session.user as any).name || session.user.email,
+      email: session.user.email
+    };
+    
     // Call the EventsService to create the RSVP and send email
-    const result = await EventsService.rsvpToEvent(eventId, userId, status);
+    const result = await EventsService.rsvpToEvent(eventId, userId, status, sessionUserData);
     
     return NextResponse.json({ success: true, result });
   } catch (error) {

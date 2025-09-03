@@ -551,8 +551,6 @@ export class EventsService {
 
   // RSVP functionality
   static async rsvpToEvent(eventId: string, userId: string, status: 'going' | 'maybe' | 'not_going', sessionUserData?: { name?: string; email?: string }): Promise<void> {
-    console.log('rsvpToEvent called with:', { eventId, userId, status, sessionUserData });
-    
     try {
       // First, check if RSVP already exists
       const { data: existingRSVP } = await supabase
@@ -563,7 +561,6 @@ export class EventsService {
         .single();
 
       if (existingRSVP) {
-        console.log('Updating existing RSVP:', existingRSVP.id);
         // Update existing RSVP
         const { error } = await supabase
           .from('event_rsvps')
@@ -578,9 +575,7 @@ export class EventsService {
           console.error('Error updating existing RSVP:', error);
           throw new Error('Failed to update RSVP');
         }
-        console.log('RSVP updated successfully');
       } else {
-        console.log('Creating new RSVP for user:', userId);
         // Create new RSVP
         const { error } = await supabase
           .from('event_rsvps')
@@ -596,7 +591,6 @@ export class EventsService {
           console.error('Error creating new RSVP:', error);
           throw new Error('Failed to create RSVP');
         }
-        console.log('New RSVP created successfully');
         
         // Send confirmation email for new RSVPs
         try {

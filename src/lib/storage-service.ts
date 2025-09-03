@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+npimport { supabase } from './supabase';
 
 export class StorageService {
   private static BUCKET_NAME = 'event-images';
